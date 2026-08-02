@@ -1,0 +1,11 @@
+{
+  "name": "llm-data",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "snapshot": "node src/snapshot.js",
+    "dry-run": "node src/snapshot.js --dry-run"
+  }
+}

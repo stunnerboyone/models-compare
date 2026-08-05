@@ -6,6 +6,8 @@
  * consumers (Webflow sync, future Astro app) never see upstream field names.
  */
 
+import { attachPricing } from "./match.js";
+
 const round = (n, d = 1) =>
   typeof n === "number" && Number.isFinite(n)
     ? Math.round(n * 10 ** d) / 10 ** d
@@ -15,7 +17,7 @@ const round = (n, d = 1) =>
  * @param {Array<object>} arenaRows  raw rows from the arena source
  * @param {object|null} openrouter   map of openrouter id -> pricing info
  */
-export function normalize(arenaRows, openrouter = null) {
+export function normalize(arenaRows, openrouter = null, official = null) {
   const publishDates = new Set(
     arenaRows.map((r) => r.leaderboard_publish_date).filter(Boolean)
   );
@@ -72,8 +74,13 @@ export function normalize(arenaRows, openrouter = null) {
 
   list.sort((a, b) => (b.arena_score ?? -Infinity) - (a.arena_score ?? -Infinity));
 
+  let match = null;
+  if (openrouter) {
+    match = attachPricing(list, openrouter, official);
+  }
+
   const payload = {
-    schema_version: 1,
+    schema_version: 2,
     generated_at: new Date().toISOString(),
     arena: {
       published_at: publishedAt,
@@ -85,12 +92,28 @@ export function normalize(arenaRows, openrouter = null) {
   };
 
   if (openrouter) {
-    payload.openrouter = {
+    payload.pricing = {
       fetched_at: new Date().toISOString(),
-      source: "https://openrouter.ai/api/v1/models",
+      sources: {
+        official: "https://models.dev/api.json",
+        fallback: "https://openrouter.ai/api/v1/models",
+      },
+      unit: "USD per 1M tokens",
       note:
-        "Prices include OpenRouter's service fee and are NOT official vendor list prices.",
-      models: openrouter,
+        "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
+      matched: match.matched,
+      official: match.official,
+      matched_strict: match.strict,
+      matched_loose: match.loose,
+      blocked_ambiguous: match.ambiguous,
+      unmatched: match.unmatched.length,
+      // Coverage on the models that will actually appear on a page. The
+      // long tail (vicuna, llama-2, gpt-4-0613) is unmatched because
+      // OpenRouter stopped serving it, which is not a defect to chase.
+      coverage_top50: list
+        .slice(0, 50)
+        .filter((m) => m.price_match).length,
+      unmatched_models: match.unmatched,
     };
   }
 

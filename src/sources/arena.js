@@ -43,25 +43,62 @@ function buildUrl(offset) {
   return `${BASE}?${params}`;
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// The dataset-server reindexes periodically and answers 500 with
+// "the dataset index is loading" while it does. It clears within a minute or
+// two, so a failed page is worth retrying rather than losing the whole run.
+const RETRIES = 4;
+const BACKOFF_MS = [3000, 10000, 25000, 45000];
+
+function isTransient(status, body) {
+  if (status >= 500) return true;
+  if (status === 429) return true;
+  return /index is loading|try again/i.test(body);
+}
+
 async function getPage(offset) {
-  const res = await fetch(buildUrl(offset), {
-    headers: { accept: "application/json" },
-  });
+  let lastError = null;
 
-  if (!res.ok) {
+  for (let attempt = 0; attempt <= RETRIES; attempt++) {
+    if (attempt > 0) {
+      const wait = BACKOFF_MS[attempt - 1] ?? 45000;
+      console.log(
+        `  arena: offset ${offset} — ${lastError}; retrying in ${wait / 1000}s (${attempt}/${RETRIES})`
+      );
+      await sleep(wait);
+    }
+
+    let res;
+    try {
+      res = await fetch(buildUrl(offset), { headers: { accept: "application/json" } });
+    } catch (err) {
+      lastError = `network error: ${err.message}`;
+      continue;
+    }
+
+    if (res.ok) {
+      const json = await res.json();
+      if (!Array.isArray(json.rows)) {
+        throw new Error("arena: unexpected payload — `rows` is not an array");
+      }
+      return json;
+    }
+
     const body = await res.text().catch(() => "");
-    throw new Error(
-      `arena: HTTP ${res.status} at offset ${offset}. ${body.slice(0, 300)}`
-    );
+
+    if (!isTransient(res.status, body)) {
+      throw new Error(
+        `arena: HTTP ${res.status} at offset ${offset}. ${body.slice(0, 300)}`
+      );
+    }
+
+    lastError = `HTTP ${res.status}`;
   }
 
-  const json = await res.json();
-
-  if (!Array.isArray(json.rows)) {
-    throw new Error("arena: unexpected payload — `rows` is not an array");
-  }
-
-  return json;
+  throw new Error(
+    `arena: gave up at offset ${offset} after ${RETRIES} retries — ${lastError}. Upstream is reindexing; try again shortly.`
+  );
 }
 
 /**

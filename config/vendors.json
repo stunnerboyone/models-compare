@@ -1,0 +1,112 @@
+{
+  "_comment": [
+    "Membership rules for each page in the site nav.",
+    "",
+    "mode 'org'      — models Arena attributes to this organization. Optional",
+    "                  `include` / `exclude` prefixes narrow it to one product",
+    "                  family, because the nav is organised by product and Arena",
+    "                  by company. Meta ships Llama *and* other lines; Google",
+    "                  ships Gemini *and* Gemma. Without a prefix filter the Llama",
+    "                  page fills up with models that are not Llama.",
+    "",
+    "mode 'curated'  — an explicit list of arena_model_name values, for products",
+    "                  that run on other vendors' models. Nothing in Arena or",
+    "                  OpenRouter states which models a product uses, so this list",
+    "                  is editorial and goes stale on its own. Each needs a source",
+    "                  and a verified date; entries older than `stale_after_days`",
+    "                  are reported by `--check`.",
+    "",
+    "Prefixes are matched against arena_model_name, case-insensitive.",
+    "Run `node src/vendors.js --check` to validate."
+  ],
+  "stale_after_days": 60,
+  "vendors": {
+    "chatgpt": {
+      "mode": "org",
+      "org": "openai",
+      "include": [
+        "gpt-",
+        "o1",
+        "o3",
+        "o4",
+        "chatgpt-"
+      ]
+    },
+    "claude": {
+      "mode": "org",
+      "org": "anthropic",
+      "include": [
+        "claude-"
+      ]
+    },
+    "gemini": {
+      "mode": "org",
+      "org": "google",
+      "include": [
+        "gemini-"
+      ],
+      "exclude": [
+        "gemma-"
+      ]
+    },
+    "deepseek": {
+      "mode": "org",
+      "org": "deepseek",
+      "include": [
+        "deepseek-"
+      ]
+    },
+    "grok": {
+      "mode": "org",
+      "org": "xai",
+      "include": [
+        "grok-"
+      ]
+    },
+    "llama": {
+      "mode": "org",
+      "org": "meta",
+      "include": [
+        "llama-"
+      ],
+      "note": "Arena's `meta` org covers more than Llama. Without the prefix filter this page fills with unrelated Meta models."
+    },
+    "mistral": {
+      "mode": "org",
+      "org": "mistral",
+      "include": [
+        "mistral-",
+        "mixtral-",
+        "magistral-",
+        "ministral-",
+        "codestral-",
+        "devstral-",
+        "pixtral-"
+      ]
+    },
+    "qwen": {
+      "mode": "org",
+      "org": "alibaba",
+      "include": [
+        "qwen",
+        "qwq"
+      ]
+    },
+    "copilot": {
+      "mode": "curated",
+      "verified_at": null,
+      "sources": [
+        "https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-models"
+      ],
+      "note": "Availability varies by surface (M365 Copilot / Copilot Studio / Cowork), by region, and by admin policy — Anthropic models are off by default for EU/EFTA/UK tenants. Decide with the content team which surface the page describes before filling this in.",
+      "models": []
+    },
+    "perplexity": {
+      "mode": "curated",
+      "verified_at": null,
+      "sources": [],
+      "note": "Runs a mix of third-party models plus its own Sonar family. Sonar is not benchmarked on Arena, so it will have no score — decide whether the table shows only the third-party models or needs an extra column.",
+      "models": []
+    }
+  }
+}

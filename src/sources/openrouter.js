@@ -39,6 +39,9 @@ export async function fetchOpenRouter() {
     out[m.id] = {
       id: m.id,
       name: m.name ?? null,
+      // Unix seconds. The only real release date available anywhere in our
+      // sources — Arena publishes scores but no dates at all.
+      created: Number.isFinite(m.created) ? m.created : null,
       context_length: m.context_length ?? null,
       price_input_per_mtok: perMillion(m.pricing?.prompt),
       price_output_per_mtok: perMillion(m.pricing?.completion),

@@ -1,0 +1,38 @@
+{
+  "_comment": [
+    "Provider ids on models.dev that are the vendor itself, not a reseller.",
+    "Only these count as an official price.",
+    "",
+    "Order is priority: if the same model id appears under two of these, the",
+    "one listed first wins.",
+    "",
+    "Deliberately excluded:",
+    "  google-vertex, azure, amazon-bedrock — the vendor's model resold through",
+    "    a cloud, at cloud pricing. Real, but not the list price a reader sees.",
+    "  *-coding-plan, *-token-plan — bundled subscription tiers, often $0.",
+    "  openrouter, poe, vercel, kilo, ... — resellers with their own margin.",
+    "",
+    "Note: `meta` carries almost nothing; Llama models live under `llama`."
+  ],
+
+  "first_party": [
+    "openai",
+    "anthropic",
+    "google",
+    "alibaba",
+    "xai",
+    "deepseek",
+    "mistral",
+    "llama",
+    "meta",
+    "perplexity",
+    "moonshotai",
+    "zai",
+    "zhipuai",
+    "minimax",
+    "cohere",
+    "nvidia",
+    "stepfun",
+    "upstage"
+  ]
+}

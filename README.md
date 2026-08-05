@@ -43,9 +43,20 @@ publications. Pages should say *"Data as of {published_at}"*, never
 *"updated daily"*.
 
 **OpenRouter prices are not vendor list prices.** They're the provider price
-plus OpenRouter's service fee. Off by default (`WITH_OPENROUTER=1` to enable).
-If we publish official vendor pricing instead, it belongs in the CMS by hand —
-it changes a few times a year and doesn't need automation.
+plus OpenRouter's service fee, so they sit slightly above what the vendor
+charges directly. Any page publishing them must say so. `WITHOUT_PRICING=1`
+skips the fetch entirely.
+
+Matching between the two sources is done in `src/match.js` by canonical name,
+not by a lookup table. Arena writes `claude-opus-4-6-thinking`, OpenRouter
+writes `anthropic/claude-opus-4.6` — the differences (org prefix, dot vs dash
+version separators, reasoning-mode suffix, trailing dates) are systematic and
+normalise away. Reasoning modes collapse onto the base model because they share
+a price; `-fast` / `-mini` variants deliberately do not, because they don't.
+
+Arena lists more models than OpenRouter serves, so full coverage is not
+expected. Run with `SHOW_UNMATCHED=1` to see what didn't match — a sudden drop
+in coverage means `canon()` has drifted from upstream naming.
 
 ## Usage
 

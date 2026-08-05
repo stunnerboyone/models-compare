@@ -5,6 +5,9 @@ on:
     # 06:15 UTC daily. Off-the-hour on purpose — scheduled jobs at :00 sit in
     # a long queue on GitHub's shared runners.
     - cron: "15 6 * * *"
+    # Second attempt. The dataset-server sometimes reindexes for longer than
+    # the in-process retries cover; a run that finds no change is a no-op.
+    - cron: "15 9 * * *"
   workflow_dispatch:
 
 permissions:

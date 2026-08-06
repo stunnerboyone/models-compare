@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-08-05T06:51:25.313Z",
+  "generated_at": "2026-08-06T08:51:38.987Z",
   "arena": {
     "published_at": "2026-08-03",
     "source": "https://arena.ai/leaderboard",
@@ -1681,10 +1681,7 @@
       "price_input_per_mtok": 15,
       "price_output_per_mtok": 75,
       "price_match": "strict",
-      "price_source": "official",
-      "price_provider": "anthropic",
-      "modelsdev_id": "claude-opus-4-1",
-      "knowledge_cutoff": "2025-03-31"
+      "price_source": "openrouter"
     },
     {
       "arena_model_name": "ernie-5.0-preview-1203",
@@ -1820,10 +1817,7 @@
       "price_input_per_mtok": 15,
       "price_output_per_mtok": 75,
       "price_match": "strict",
-      "price_source": "official",
-      "price_provider": "anthropic",
-      "modelsdev_id": "claude-opus-4-1",
-      "knowledge_cutoff": "2025-03-31"
+      "price_source": "openrouter"
     },
     {
       "arena_model_name": "ernie-5.0-0110",
@@ -10367,7 +10361,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-08-05T06:51:25.313Z",
+    "fetched_at": "2026-08-06T08:51:38.987Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
@@ -10375,7 +10369,7 @@
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
     "matched": 187,
-    "official": 133,
+    "official": 131,
     "matched_strict": 149,
     "matched_loose": 38,
     "blocked_ambiguous": 2,

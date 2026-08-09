@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-08-08T07:11:35.209Z",
+  "generated_at": "2026-08-09T07:13:11.513Z",
   "arena": {
     "published_at": "2026-08-06",
     "source": "https://arena.ai/leaderboard",
@@ -955,7 +955,7 @@
       "price_output_per_mtok": 4.4,
       "price_match": "loose",
       "price_source": "official",
-      "price_provider": "zai",
+      "price_provider": "alibaba",
       "modelsdev_id": "glm-5.2",
       "knowledge_cutoff": null
     },
@@ -2755,8 +2755,8 @@
       "openrouter_id": "deepseek/deepseek-v3.2",
       "released_at": "2025-12-01",
       "context_length": 163840,
-      "price_input_per_mtok": 0.26,
-      "price_output_per_mtok": 0.38,
+      "price_input_per_mtok": 0.269,
+      "price_output_per_mtok": 0.4,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -2917,8 +2917,8 @@
       "openrouter_id": "deepseek/deepseek-v3.2",
       "released_at": "2025-12-01",
       "context_length": 163840,
-      "price_input_per_mtok": 0.26,
-      "price_output_per_mtok": 0.38,
+      "price_input_per_mtok": 0.269,
+      "price_output_per_mtok": 0.4,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -10419,7 +10419,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-08-08T07:11:35.209Z",
+    "fetched_at": "2026-08-09T07:13:11.513Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

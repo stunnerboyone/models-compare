@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-08-16T06:56:24.653Z",
+  "generated_at": "2026-08-16T09:42:10.106Z",
   "arena": {
     "published_at": "2026-08-12",
     "source": "https://arena.ai/leaderboard",
@@ -4995,7 +4995,7 @@
       "openrouter_id": "minimax/minimax-m1",
       "released_at": "2025-06-17",
       "context_length": 1000000,
-      "price_input_per_mtok": 0.4,
+      "price_input_per_mtok": 0.55,
       "price_output_per_mtok": 2.2,
       "price_match": "strict",
       "price_source": "openrouter"
@@ -10523,7 +10523,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-08-16T06:56:24.653Z",
+    "fetched_at": "2026-08-16T09:42:10.106Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

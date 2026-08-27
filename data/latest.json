@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-08-26T07:05:56.459Z",
+  "generated_at": "2026-08-27T17:36:11.546Z",
   "arena": {
     "published_at": "2026-08-21",
     "source": "https://arena.ai/leaderboard",
@@ -1600,8 +1600,8 @@
       "openrouter_id": "tencent/hy3",
       "released_at": "2026-07-06",
       "context_length": 262144,
-      "price_input_per_mtok": 0.132,
-      "price_output_per_mtok": 0.528,
+      "price_input_per_mtok": 0.0825,
+      "price_output_per_mtok": 0.33,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -8300,15 +8300,15 @@
       "arena_votes": 4781,
       "canonical_id": "ministral-8b-2410",
       "reasoning_mode": null,
-      "openrouter_id": null,
+      "openrouter_id": "mistralai/ministral-8b-2512",
+      "released_at": "2024-10-01",
+      "context_length": 262144,
       "price_input_per_mtok": 0.1,
       "price_output_per_mtok": 0.1,
+      "price_match": "loose",
       "price_source": "official",
       "price_provider": "mistral",
-      "price_match": "loose",
       "modelsdev_id": "ministral-8b-latest",
-      "released_at": "2024-10-01",
-      "context_length": 128000,
       "knowledge_cutoff": "2024-10"
     },
     {
@@ -10662,7 +10662,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-08-26T07:05:56.459Z",
+    "fetched_at": "2026-08-27T17:36:11.546Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

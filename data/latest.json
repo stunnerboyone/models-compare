@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-08-28T18:37:23.992Z",
+  "generated_at": "2026-08-29T12:39:04.489Z",
   "arena": {
     "published_at": "2026-08-27",
     "source": "https://arena.ai/leaderboard",
@@ -1684,8 +1684,8 @@
       "openrouter_id": "tencent/hy3",
       "released_at": "2026-07-06",
       "context_length": 262144,
-      "price_input_per_mtok": 0.0825,
-      "price_output_per_mtok": 0.33,
+      "price_input_per_mtok": 0.132,
+      "price_output_per_mtok": 0.528,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -7135,13 +7135,13 @@
       "arena_votes": 5682,
       "canonical_id": "olmo-3.32b-think",
       "reasoning_mode": null,
-      "openrouter_id": "allenai/olmo-3-32b-think",
-      "released_at": "2025-11-21",
-      "context_length": 65536,
-      "price_input_per_mtok": 0.15,
-      "price_output_per_mtok": 0.5,
-      "price_match": "strict",
-      "price_source": "openrouter"
+      "openrouter_id": null,
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "athene-70b-0725",
@@ -10691,19 +10691,19 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-08-28T18:37:23.992Z",
+    "fetched_at": "2026-08-29T12:39:04.489Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
     },
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
-    "matched": 194,
+    "matched": 193,
     "official": 137,
-    "matched_strict": 156,
+    "matched_strict": 155,
     "matched_loose": 38,
     "blocked_ambiguous": 2,
-    "unmatched": 201,
+    "unmatched": 202,
     "coverage_top50": 44,
     "unmatched_models": [
       {
@@ -11362,6 +11362,13 @@
         "canonical": "deepseek-v2.5",
         "loose": "deepseek-v2.5",
         "org": "deepseek",
+        "reason": "not on openrouter"
+      },
+      {
+        "arena": "olmo-3-32b-think",
+        "canonical": "olmo-3.32b-think",
+        "loose": "olmo-3.32b-think",
+        "org": "allenai",
         "reason": "not on openrouter"
       },
       {

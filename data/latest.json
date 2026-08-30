@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-08-29T12:39:04.489Z",
+  "generated_at": "2026-08-30T11:52:36.417Z",
   "arena": {
     "published_at": "2026-08-27",
     "source": "https://arena.ai/leaderboard",
@@ -2292,7 +2292,7 @@
       "openrouter_id": "thinkingmachines/inkling",
       "released_at": "2026-07-17",
       "context_length": 1048576,
-      "price_input_per_mtok": 0.95,
+      "price_input_per_mtok": 1,
       "price_output_per_mtok": 4.05,
       "price_match": "strict",
       "price_source": "openrouter"
@@ -5001,8 +5001,8 @@
       "openrouter_id": "arcee-ai/trinity-large-thinking",
       "released_at": "2026-04-01",
       "context_length": 262144,
-      "price_input_per_mtok": 0.22,
-      "price_output_per_mtok": 0.85,
+      "price_input_per_mtok": 0.25,
+      "price_output_per_mtok": 0.8,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -10691,7 +10691,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-08-29T12:39:04.489Z",
+    "fetched_at": "2026-08-30T11:52:36.417Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

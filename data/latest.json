@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-02T11:15:52.212Z",
+  "generated_at": "2026-09-03T11:10:08.566Z",
   "arena": {
     "published_at": "2026-09-01",
     "source": "https://arena.ai/leaderboard",
@@ -6794,8 +6794,8 @@
       "openrouter_id": "meta-llama/llama-3.3-70b-instruct",
       "released_at": "2024-12-06",
       "context_length": 131072,
-      "price_input_per_mtok": 0.71,
-      "price_output_per_mtok": 0.71,
+      "price_input_per_mtok": 0.1,
+      "price_output_per_mtok": 0.32,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -10769,7 +10769,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-09-02T11:15:52.212Z",
+    "fetched_at": "2026-09-03T11:10:08.566Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

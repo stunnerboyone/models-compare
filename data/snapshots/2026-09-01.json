@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-04T11:12:52.714Z",
+  "generated_at": "2026-09-05T10:31:20.483Z",
   "arena": {
     "published_at": "2026-09-01",
     "source": "https://arena.ai/leaderboard",
@@ -571,7 +571,7 @@
       "arena_votes": 13136,
       "canonical_id": "qwen3.8-max",
       "reasoning_mode": null,
-      "openrouter_id": "qwen/qwen3.8-max",
+      "openrouter_id": "qwen/qwen3.8-max-0902",
       "released_at": "2026-08-03",
       "context_length": 1000000,
       "price_input_per_mtok": 2,
@@ -7213,13 +7213,13 @@
       "arena_votes": 4027,
       "canonical_id": "granite-4.1.8b",
       "reasoning_mode": null,
-      "openrouter_id": "ibm-granite/granite-4.1-8b",
-      "released_at": "2026-04-30",
-      "context_length": 131072,
-      "price_input_per_mtok": 0.05,
-      "price_output_per_mtok": 0.1,
-      "price_match": "strict",
-      "price_source": "openrouter"
+      "openrouter_id": null,
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "mistral-large-2411",
@@ -10769,19 +10769,19 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-09-04T11:12:52.714Z",
+    "fetched_at": "2026-09-05T10:31:20.483Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
     },
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
-    "matched": 194,
+    "matched": 193,
     "official": 137,
-    "matched_strict": 156,
-    "matched_loose": 38,
+    "matched_strict": 154,
+    "matched_loose": 39,
     "blocked_ambiguous": 2,
-    "unmatched": 204,
+    "unmatched": 205,
     "coverage_top50": 44,
     "unmatched_models": [
       {
@@ -11461,6 +11461,13 @@
         "canonical": "athene-70b-0725",
         "loose": "athene-70b",
         "org": "",
+        "reason": "not on openrouter"
+      },
+      {
+        "arena": "granite-4.1-8b",
+        "canonical": "granite-4.1.8b",
+        "loose": "granite-4.1.8b",
+        "org": "ibm",
         "reason": "not on openrouter"
       },
       {

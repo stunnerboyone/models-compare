@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-06T10:56:02.011Z",
+  "generated_at": "2026-09-07T15:06:46.948Z",
   "arena": {
     "published_at": "2026-09-02",
     "source": "https://arena.ai/leaderboard",
@@ -1876,15 +1876,12 @@
       "canonical_id": "kimi-k2.5",
       "reasoning_mode": "thinking",
       "openrouter_id": "moonshotai/kimi-k2.5",
-      "released_at": "2026-01",
+      "released_at": "2026-01-27",
       "context_length": 262144,
-      "price_input_per_mtok": 0.6,
-      "price_output_per_mtok": 3,
+      "price_input_per_mtok": 0.45,
+      "price_output_per_mtok": 2.25,
       "price_match": "strict",
-      "price_source": "official",
-      "price_provider": "moonshotai",
-      "modelsdev_id": "kimi-k2.5",
-      "knowledge_cutoff": "2025-01"
+      "price_source": "openrouter"
     },
     {
       "arena_model_name": "claude-opus-4-1-20250805-thinking-16k",
@@ -2788,15 +2785,12 @@
       "canonical_id": "kimi-k2-thinking-turbo",
       "reasoning_mode": null,
       "openrouter_id": null,
-      "price_input_per_mtok": 1.15,
-      "price_output_per_mtok": 8,
-      "price_source": "official",
-      "price_provider": "moonshotai",
-      "price_match": "strict",
-      "modelsdev_id": "kimi-k2-thinking-turbo",
-      "released_at": "2025-11-06",
-      "context_length": 262144,
-      "knowledge_cutoff": "2024-08"
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "mimo-v2-omni",
@@ -3268,15 +3262,12 @@
       "canonical_id": "kimi-k2.0905-preview",
       "reasoning_mode": null,
       "openrouter_id": null,
-      "price_input_per_mtok": 0.6,
-      "price_output_per_mtok": 2.5,
-      "price_source": "official",
-      "price_provider": "moonshotai",
-      "price_match": "strict",
-      "modelsdev_id": "kimi-k2-0905-preview",
-      "released_at": "2025-09-05",
-      "context_length": 262144,
-      "knowledge_cutoff": "2024-10"
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "kimi-k2-0711-preview",
@@ -3297,15 +3288,12 @@
       "canonical_id": "kimi-k2.0711-preview",
       "reasoning_mode": null,
       "openrouter_id": null,
-      "price_input_per_mtok": 0.6,
-      "price_output_per_mtok": 2.5,
-      "price_source": "official",
-      "price_provider": "moonshotai",
-      "price_match": "strict",
-      "modelsdev_id": "kimi-k2-0711-preview",
-      "released_at": "2025-07-14",
-      "context_length": 131072,
-      "knowledge_cutoff": "2024-10"
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "deepseek-v3.1-terminus-thinking",
@@ -10798,19 +10786,19 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-09-06T10:56:02.011Z",
+    "fetched_at": "2026-09-07T15:06:46.948Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
     },
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
-    "matched": 194,
-    "official": 138,
-    "matched_strict": 154,
+    "matched": 191,
+    "official": 134,
+    "matched_strict": 151,
     "matched_loose": 40,
-    "blocked_ambiguous": 2,
-    "unmatched": 205,
+    "blocked_ambiguous": 4,
+    "unmatched": 208,
     "coverage_top50": 44,
     "unmatched_models": [
       {
@@ -10940,6 +10928,13 @@
         "reason": "not on openrouter"
       },
       {
+        "arena": "kimi-k2-thinking-turbo",
+        "canonical": "kimi-k2-thinking-turbo",
+        "loose": "kimi-k2-thinking-turbo",
+        "org": "moonshot",
+        "reason": "not on openrouter"
+      },
+      {
         "arena": "mimo-v2-omni",
         "canonical": "mimo-v2-omni",
         "loose": "mimo-v2-omni",
@@ -10987,6 +10982,20 @@
         "loose": "grok-4-fast-chat",
         "org": "xai",
         "reason": "not on openrouter"
+      },
+      {
+        "arena": "kimi-k2-0905-preview",
+        "canonical": "kimi-k2.0905-preview",
+        "loose": "kimi-k2",
+        "org": "moonshot",
+        "reason": "ambiguous"
+      },
+      {
+        "arena": "kimi-k2-0711-preview",
+        "canonical": "kimi-k2.0711-preview",
+        "loose": "kimi-k2",
+        "org": "moonshot",
+        "reason": "ambiguous"
       },
       {
         "arena": "deepseek-v3.1",

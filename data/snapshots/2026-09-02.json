@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-08T11:15:08.319Z",
+  "generated_at": "2026-09-09T13:46:50.971Z",
   "arena": {
     "published_at": "2026-09-02",
     "source": "https://arena.ai/leaderboard",
@@ -5177,7 +5177,7 @@
       "openrouter_id": "minimax/minimax-m1",
       "released_at": "2025-06-17",
       "context_length": 1000000,
-      "price_input_per_mtok": 0.4,
+      "price_input_per_mtok": 0.55,
       "price_output_per_mtok": 2.2,
       "price_match": "strict",
       "price_source": "openrouter"
@@ -5231,7 +5231,7 @@
       "reasoning_mode": null,
       "openrouter_id": "nvidia/nemotron-3-super-120b-a12b",
       "released_at": "2026-03-11",
-      "context_length": 1000000,
+      "context_length": 262144,
       "price_input_per_mtok": 0.2,
       "price_output_per_mtok": 0.8,
       "price_match": "loose",
@@ -7580,8 +7580,8 @@
       "openrouter_id": "ibm-granite/granite-4.2-8b",
       "released_at": "2026-08-31",
       "context_length": 131072,
-      "price_input_per_mtok": 0.1,
-      "price_output_per_mtok": 0.15,
+      "price_input_per_mtok": 0.06,
+      "price_output_per_mtok": 0.25,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -10786,7 +10786,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-09-08T11:15:08.319Z",
+    "fetched_at": "2026-09-09T13:46:50.971Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

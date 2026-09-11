@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-09T13:46:50.971Z",
+  "generated_at": "2026-09-11T11:15:18.371Z",
   "arena": {
     "published_at": "2026-09-02",
     "source": "https://arena.ai/leaderboard",
@@ -2399,8 +2399,8 @@
       "openrouter_id": "google/gemma-4-26b-a4b-it",
       "released_at": "2026-04-03",
       "context_length": 262144,
-      "price_input_per_mtok": 0.07,
-      "price_output_per_mtok": 0.34,
+      "price_input_per_mtok": 0.042,
+      "price_output_per_mtok": 0.22,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -2533,10 +2533,10 @@
       "canonical_id": "deepseek-v4-flash",
       "reasoning_mode": null,
       "openrouter_id": "deepseek/deepseek-v4-flash",
-      "released_at": "2026-07-31",
+      "released_at": "2026-09-10",
       "context_length": 1048576,
-      "price_input_per_mtok": 0.14,
-      "price_output_per_mtok": 0.28,
+      "price_input_per_mtok": 0.15,
+      "price_output_per_mtok": 0.6,
       "price_match": "strict",
       "price_source": "official",
       "price_provider": "deepseek",
@@ -4714,8 +4714,8 @@
       "openrouter_id": "qwen/qwen3-30b-a3b-instruct-2507",
       "released_at": "2025-07-29",
       "context_length": 262144,
-      "price_input_per_mtok": 0.04815,
-      "price_output_per_mtok": 0.19305,
+      "price_input_per_mtok": 0.09,
+      "price_output_per_mtok": 0.3,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -5072,7 +5072,7 @@
       "reasoning_mode": null,
       "openrouter_id": "z-ai/glm-4.7-flash",
       "released_at": "2026-01-19",
-      "context_length": 202752,
+      "context_length": 200000,
       "price_input_per_mtok": 0.0605,
       "price_output_per_mtok": 0.4,
       "price_match": "strict",
@@ -10786,7 +10786,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-09-09T13:46:50.971Z",
+    "fetched_at": "2026-09-11T11:15:18.371Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

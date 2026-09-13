@@ -1,0 +1,50 @@
+name: webflow-sync
+
+on:
+  # Manual only for now. Turn the schedule block below on once the
+  # content team has published the CMS items — until then the sync
+  # only updates drafts, which aren't visible on the site anyway, so a
+  # cron would just churn without user-visible effect.
+  #
+  # schedule:
+  #   # 06:45 UTC daily, 30 minutes after the snapshot cron so the sync
+  #   # picks up whatever the snapshot job just committed.
+  #   - cron: "45 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: webflow-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Push snapshot to Webflow
+        env:
+          # No .env file exists in CI — that's why the script uses
+          # --env-file-if-exists. The token comes from the runner env.
+          WEBFLOW_TOKEN: ${{ secrets.WEBFLOW_TOKEN }}
+        run: node --env-file-if-exists=.env src/webflow-sync.js
+
+      # Only fires when the job failed — a silent broken cron is the whole
+      # thing we are trying to avoid.
+      - name: Alert on failure
+        if: failure()
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          [ -z "$TG_TOKEN" ] && exit 0
+          curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            -d chat_id="${TG_CHAT}" \
+            -d text="llm-data webflow-sync FAILED — ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >/dev/null

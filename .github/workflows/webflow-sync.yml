@@ -34,7 +34,49 @@ jobs:
           # No .env file exists in CI — that's why the script uses
           # --env-file-if-exists. The token comes from the runner env.
           WEBFLOW_TOKEN: ${{ secrets.WEBFLOW_TOKEN }}
-        run: node --env-file-if-exists=.env src/webflow-sync.js
+        # tee keeps the Actions log identical while capturing the summary
+        # for the notify step. pipefail preserves node's exit code so a
+        # sync failure still fails the job (tee itself always exits 0).
+        run: |
+          set -o pipefail
+          node --env-file-if-exists=.env src/webflow-sync.js 2>&1 | tee sync.log
+
+      # Stay quiet on the "nothing to update" runs — that's most of them.
+      # Ping only when the sync actually changed something (updated > 0)
+      # or when a CMS item's arena-model-name has disappeared from the
+      # snapshot (missed > 0), which usually means a model was renamed
+      # or dropped from the leaderboard and the page will otherwise show
+      # stale numbers until someone notices.
+      - name: Notify on change
+        if: success()
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          [ -z "$TG_TOKEN" ] && exit 0
+          [ -f sync.log ] || exit 0
+          line=$(grep -E '^summary: ' sync.log | tail -n 1)
+          [ -z "$line" ] && exit 0
+          matched=$(echo "$line" | sed -n 's/.*matched=\([0-9]*\).*/\1/p')
+          updated=$(echo "$line" | sed -n 's/.*updated=\([0-9]*\).*/\1/p')
+          missed=$(echo  "$line" | sed -n 's/.*missed=\([0-9]*\).*/\1/p')
+          matched=${matched:-0}
+          updated=${updated:-0}
+          missed=${missed:-0}
+          if [ "$updated" -eq 0 ] && [ "$missed" -eq 0 ]; then
+            echo "nothing changed and nothing missed — silent"
+            exit 0
+          fi
+          text="llm-data webflow-sync: updated ${updated} of ${matched} items"
+          if [ "$missed" -gt 0 ]; then
+            text="${text}
+          MISS: ${missed} item(s) no longer in the snapshot — check CMS"
+          fi
+          text="${text}
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            -d chat_id="${TG_CHAT}" \
+            --data-urlencode "text=${text}" >/dev/null || true
 
       # Only fires when the job failed — a silent broken cron is the whole
       # thing we are trying to avoid.

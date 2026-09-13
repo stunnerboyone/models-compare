@@ -4,3 +4,4 @@ setup.sh
 match-report.txt
 preview.html
 probe.js
+.env

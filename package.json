@@ -14,6 +14,8 @@
     "vendors": "node src/vendors.js",
     "check": "node src/vendors.js --check",
     "watch": "node src/watch.js",
-    "webflow": "node src/webflow-inspect.js"
+    "webflow": "node --env-file-if-exists=.env src/webflow-inspect.js",
+    "sync": "node --env-file-if-exists=.env src/webflow-sync.js",
+    "sync:dry": "node --env-file-if-exists=.env src/webflow-sync.js --dry-run"
   }
 }

@@ -16,6 +16,8 @@
     "watch": "node src/watch.js",
     "webflow": "node --env-file-if-exists=.env src/webflow-inspect.js",
     "sync": "node --env-file-if-exists=.env src/webflow-sync.js",
-    "sync:dry": "node --env-file-if-exists=.env src/webflow-sync.js --dry-run"
+    "sync:dry": "node --env-file-if-exists=.env src/webflow-sync.js --dry-run",
+    "seed": "node --env-file-if-exists=.env src/webflow-seed.js",
+    "seed:dry": "node --env-file-if-exists=.env src/webflow-seed.js --dry-run"
   }
 }

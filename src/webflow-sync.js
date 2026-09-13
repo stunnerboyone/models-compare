@@ -177,6 +177,29 @@ async function fetchAllItems() {
   return items;
 }
 
+async function patchGroup(group, path, label) {
+  if (group.length === 0) return 0;
+  const chunkSize = 100;
+  let count = 0;
+  for (let i = 0; i < group.length; i += chunkSize) {
+    const chunk = group.slice(i, i + chunkSize);
+    const body = {
+      items: chunk.map((m) => ({
+        id: m.id,
+        fieldData: Object.fromEntries(
+          Object.entries(m.changes).map(([slug, { after }]) => [slug, after])
+        ),
+      })),
+    };
+    await api("PATCH", path, body);
+    count += chunk.length;
+    console.log(
+      `  ${label} batch ${Math.floor(i / chunkSize) + 1}: ${chunk.length} item(s) patched`
+    );
+  }
+  return count;
+}
+
 function mapProvider(org, warnings) {
   if (org == null) return null;
   const key = String(org).toLowerCase();
@@ -215,13 +238,21 @@ function buildFieldData(model, itemName, warnings, licenseOptions) {
   set("released-at", toIso(model.released_at));
 
   if (model.license != null && licenseOptions) {
-    const id = licenseOptions.nameToId.get(model.license);
+    // Anything that isn't "Proprietary" is treated as "Open-weight": MIT,
+    // Apache, Llama Community, Modified MIT and so on all describe open
+    // weights and the CMS only offers those two buckets. Log the mapping
+    // so it's visible in the diff, but not as an error.
+    const target = model.license === "Proprietary" ? "Proprietary" : "Open-weight";
+    if (target !== model.license) {
+      warnings.push(`"${itemName}" — mapped license "${model.license}" -> "${target}"`);
+    }
+    const id = licenseOptions.nameToId.get(target);
     if (id) {
       set("license", id);
     } else {
       const allowed = [...licenseOptions.nameToId.keys()].join(", ");
       warnings.push(
-        `"${itemName}" — unexpected license "${model.license}" (allowed: ${allowed}), skipping license field`
+        `"${itemName}" — target license "${target}" not in CMS options (${allowed}), skipping license field`
       );
     }
   }
@@ -310,9 +341,15 @@ async function main() {
       );
     }
 
+    // /items/live can only patch items that have been published at least
+    // once. Treat an item as published only when both signals agree; if
+    // they contradict, fall back to the plain /items endpoint since it
+    // never 409s on unpublished drafts.
+    const isPublished = item.isDraft !== true && Boolean(item.lastPublished);
+
     const next = buildFieldData(model, name, warnings, licenseOptions);
     const changes = diffFields(item.fieldData, next);
-    matched.push({ id: item.id, name, next, changes });
+    matched.push({ id: item.id, name, next, changes, isPublished });
   }
 
   const toUpdate = matched.filter((m) => Object.keys(m.changes).length > 0);
@@ -350,21 +387,13 @@ async function main() {
   let updated = 0;
   if (!DRY_RUN && toUpdate.length > 0) {
     console.log("\npatching…");
-    const chunkSize = 100;
-    for (let i = 0; i < toUpdate.length; i += chunkSize) {
-      const chunk = toUpdate.slice(i, i + chunkSize);
-      const body = {
-        items: chunk.map((m) => ({
-          id: m.id,
-          fieldData: Object.fromEntries(
-            Object.entries(m.changes).map(([slug, { after }]) => [slug, after])
-          ),
-        })),
-      };
-      await api("PATCH", `/collections/${COLLECTION_ID}/items/live`, body);
-      updated += chunk.length;
-      console.log(`  batch ${Math.floor(i / chunkSize) + 1}: ${chunk.length} item(s) patched`);
-    }
+    // Route by publish state. Patching a draft via /items doesn't
+    // publish it — the item stays a draft until a human hits Publish.
+    const liveGroup = toUpdate.filter((m) => m.isPublished);
+    const draftGroup = toUpdate.filter((m) => !m.isPublished);
+
+    updated += await patchGroup(liveGroup, `/collections/${COLLECTION_ID}/items/live`, "live");
+    updated += await patchGroup(draftGroup, `/collections/${COLLECTION_ID}/items`, "draft");
   }
 
   const updatedLabel = DRY_RUN ? `${toUpdate.length} (dry)` : String(updated);

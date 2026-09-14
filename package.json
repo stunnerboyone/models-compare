@@ -18,6 +18,8 @@
     "sync": "node --env-file-if-exists=.env src/webflow-sync.js",
     "sync:dry": "node --env-file-if-exists=.env src/webflow-sync.js --dry-run",
     "seed": "node --env-file-if-exists=.env src/webflow-seed.js",
-    "seed:dry": "node --env-file-if-exists=.env src/webflow-seed.js --dry-run"
+    "seed:dry": "node --env-file-if-exists=.env src/webflow-seed.js --dry-run",
+    "fields": "node --env-file-if-exists=.env src/webflow-fields.js",
+    "fields:dry": "node --env-file-if-exists=.env src/webflow-fields.js --dry-run"
   }
 }

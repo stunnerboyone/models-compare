@@ -52,11 +52,14 @@ const FIELD_SLUGS = [
   "arena-votes",
   "arena-ci-lower",
   "arena-ci-upper",
+  "arena-date-label",
+  "score-label",
   "provider",
   "price-input",
   "price-output",
   "price-source",
   "context-window",
+  "context-label",
   "released-at",
   "license",
 ];
@@ -208,6 +211,75 @@ function mapProvider(org, warnings) {
   return key.charAt(0).toUpperCase() + key.slice(1);
 }
 
+// Human-readable twin of context-window. The unit is part of the value,
+// not a static label in the template: the chip renders as
+// "Context window  200K tokens".
+function formatContextLabel(tokens) {
+  if (tokens == null) return null;
+  const n = Number(tokens);
+  if (!Number.isFinite(n) || n < 0) return null;
+
+  if (n >= 1_000_000) {
+    // One decimal, and no trailing ".0" — JS number formatting drops it
+    // for us, so 1e6 -> "1M" and 1.05e6 -> "1.1M".
+    const m = Math.round(n / 100_000) / 10;
+    return `${m}M tokens`;
+  }
+  if (n >= 1_000) return `${Math.round(n / 1_000)}K tokens`;
+  return `${n} tokens`;
+}
+
+// One decimal, no trailing ".0": 1497 -> "1497", 1505.5 -> "1505.5",
+// 4.75 -> "4.8". Number formatting drops the ".0" for us, which toFixed(1)
+// would not.
+function oneDecimal(n) {
+  return String(Math.round(n * 10) / 10);
+}
+
+// "1505.5 ±4.8" — score plus the half-width of its confidence interval.
+// Arena's interval is asymmetric, so ± is an approximation for the chip;
+// arena-score, arena-ci-lower and arena-ci-upper keep the exact numbers
+// for anyone who needs them.
+function formatScoreLabel(score, lower, upper) {
+  if (score == null) return null;
+  const s = Number(score);
+  if (!Number.isFinite(s)) return null;
+
+  const lo = Number(lower);
+  const hi = Number(upper);
+  const haveBounds =
+    lower != null &&
+    upper != null &&
+    Number.isFinite(lo) &&
+    Number.isFinite(hi) &&
+    hi >= lo;
+
+  if (!haveBounds) return oneDecimal(s);
+  return `${oneDecimal(s)} ±${oneDecimal((hi - lo) / 2)}`;
+}
+
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+// "2026-09-11" -> "11 Sep 2026". Deliberately string surgery rather than
+// Date + toLocaleDateString: the latter depends on the host's ICU locale
+// data, and `new Date("2026-09-11")` parses as UTC midnight, so getDate()
+// west of Greenwich would report the 10th. CI and a laptop must agree.
+function formatArenaDate(value) {
+  if (value == null) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value).trim());
+  if (!m) return null;
+
+  const [, year, month, day] = m;
+  const monthIndex = Number(month) - 1;
+  const dayNum = Number(day);
+  if (monthIndex < 0 || monthIndex > 11 || dayNum < 1 || dayNum > 31) return null;
+
+  return `${dayNum} ${MONTHS[monthIndex]} ${year}`;
+}
+
 function toIso(value) {
   if (value == null) return null;
   const d = new Date(value);
@@ -215,7 +287,9 @@ function toIso(value) {
   return d.toISOString();
 }
 
-function buildFieldData(model, itemName, warnings, licenseOptions) {
+// arenaDateLabel is snapshot-level, not per-model: it is the publish date
+// of the whole Arena cut, formatted and validated once by the caller.
+function buildFieldData(model, itemName, warnings, licenseOptions, arenaDateLabel) {
   const fd = {};
   const set = (slug, value) => {
     if (value === null || value === undefined) return;
@@ -227,6 +301,15 @@ function buildFieldData(model, itemName, warnings, licenseOptions) {
   set("arena-votes", model.arena_votes);
   set("arena-ci-lower", model.categories?.overall?.score_lower);
   set("arena-ci-upper", model.categories?.overall?.score_upper);
+  set(
+    "score-label",
+    formatScoreLabel(
+      model.arena_score,
+      model.categories?.overall?.score_lower,
+      model.categories?.overall?.score_upper
+    )
+  );
+  set("arena-date-label", arenaDateLabel);
 
   set("provider", mapProvider(model.organization, warnings));
 
@@ -235,6 +318,7 @@ function buildFieldData(model, itemName, warnings, licenseOptions) {
   set("price-source", model.price_source);
 
   set("context-window", model.context_length);
+  set("context-label", formatContextLabel(model.context_length));
   set("released-at", toIso(model.released_at));
 
   if (model.license != null && licenseOptions) {
@@ -320,6 +404,17 @@ async function main() {
   const matched = [];
   const warnings = [];
 
+  // Formatted once, not per item: it is one value for the whole cut, so a
+  // bad date is one warning rather than the same line repeated per model.
+  const arenaDateLabel = formatArenaDate(snapshot.arena?.published_at);
+  if (!arenaDateLabel) {
+    warnings.push(
+      `WARN: arena.published_at is missing or unparseable (${JSON.stringify(
+        snapshot.arena?.published_at ?? null
+      )}) — arena-date-label not written`
+    );
+  }
+
   for (const item of items) {
     const name = item.fieldData?.name ?? item.id;
     const key = item.fieldData?.["arena-model-name"];
@@ -347,7 +442,7 @@ async function main() {
     // never 409s on unpublished drafts.
     const isPublished = item.isDraft !== true && Boolean(item.lastPublished);
 
-    const next = buildFieldData(model, name, warnings, licenseOptions);
+    const next = buildFieldData(model, name, warnings, licenseOptions, arenaDateLabel);
     const changes = diffFields(item.fieldData, next);
     matched.push({ id: item.id, name, next, changes, isPublished });
   }

@@ -6,9 +6,10 @@
  *   node --env-file-if-exists=.env src/webflow-fields.js
  *   node --env-file-if-exists=.env src/webflow-fields.js --dry-run
  *
- * Creates 26 PlainText fields backing three blocks of the vendor page:
- * "What X is best at" (3 cards x 3 fields), "What people build with X"
- * (4 cards x 4 fields) and the CTA banner body.
+ * Creates 31 PlainText fields backing four blocks of the vendor page:
+ * "What X is best at" (3 cards x 2 fields), "What people build with X"
+ * (4 cards x 3 fields), the CTA banner body, the FAQ (5 x question +
+ * answer) and the two section titles.
  *
  * Only ever POSTs new fields. Fields that already exist (matched by slug)
  * are skipped, so the script is safe to re-run; nothing existing is ever
@@ -30,15 +31,14 @@ const COLLECTION_ID = "6a72e32efc969860203df096"; // Models
 
 const DRY_RUN = process.argv.includes("--dry-run");
 
-// Icons are PlainText on purpose: the mockup uses icon *names*, not
-// uploads. The content team types a name, the template maps it onto the
-// sprite. An Image field here would force them to re-upload the same
-// glyphs per model.
+// No icon fields here on purpose. best-N-icon and use-N-icon were removed
+// from the collection by hand — the cards no longer carry an icon. Listing
+// them would recreate them on the next run, since this script's only
+// reconciliation is "create what is missing".
 function bestAtFields() {
   const out = [];
   for (const n of [1, 2, 3]) {
     out.push(
-      { slug: `best-${n}-icon`, displayName: `Best ${n} Icon` },
       { slug: `best-${n}-title`, displayName: `Best ${n} Title` },
       { slug: `best-${n}-body`, displayName: `Best ${n} Body` }
     );
@@ -52,8 +52,20 @@ function useCaseFields() {
     out.push(
       { slug: `use-${n}-tag`, displayName: `Use ${n} Tag` },
       { slug: `use-${n}-title`, displayName: `Use ${n} Title` },
-      { slug: `use-${n}-body`, displayName: `Use ${n} Body` },
-      { slug: `use-${n}-icon`, displayName: `Use ${n} Icon` }
+      { slug: `use-${n}-body`, displayName: `Use ${n} Body` }
+    );
+  }
+  return out;
+}
+
+// Slugs are what Webflow actually generated on the live run: it derives
+// the slug from displayName and ignored the faq-N-q / faq-N-a we sent.
+function faqFields() {
+  const out = [];
+  for (const n of [1, 2, 3, 4, 5]) {
+    out.push(
+      { slug: `faq-${n}-question`, displayName: `FAQ ${n} Question` },
+      { slug: `faq-${n}-answer`, displayName: `FAQ ${n} Answer` }
     );
   }
   return out;
@@ -63,6 +75,11 @@ const FIELDS = [
   ...bestAtFields(),
   ...useCaseFields(),
   { slug: "banner-body", displayName: "Banner Body" },
+  ...faqFields(),
+  // Created by hand in the CMS. Listed so the script's picture matches the
+  // collection; they report as "existing" and are never touched.
+  { slug: "gateway-title", displayName: "Gateway title" },
+  { slug: "build-title", displayName: "Build title" },
 ].map((f) => ({ ...f, type: "PlainText", isRequired: false }));
 
 // Webflow limits authenticated calls to 60/minute. One request per ~1.1s

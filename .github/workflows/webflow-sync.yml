@@ -1,15 +1,10 @@
 name: webflow-sync
 
 on:
-  # Manual only for now. Turn the schedule block below on once the
-  # content team has published the CMS items — until then the sync
-  # only updates drafts, which aren't visible on the site anyway, so a
-  # cron would just churn without user-visible effect.
-  #
-  # schedule:
-  #   # 06:45 UTC daily, 30 minutes after the snapshot cron so the sync
-  #   # picks up whatever the snapshot job just committed.
-  #   - cron: "45 6 * * *"
+  schedule:
+    # 06:45 UTC daily, 30 minutes after the snapshot cron so the sync
+    # picks up whatever the snapshot job just committed.
+    - cron: "45 6 * * *"
   workflow_dispatch:
 
 permissions:

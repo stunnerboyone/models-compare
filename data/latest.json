@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-16T11:26:45.088Z",
+  "generated_at": "2026-09-17T11:38:23.910Z",
   "arena": {
     "published_at": "2026-09-13",
     "source": "https://arena.ai/leaderboard",
@@ -491,7 +491,7 @@
       "price_output_per_mtok": 15,
       "price_match": "loose",
       "price_source": "official",
-      "price_provider": "moonshotai",
+      "price_provider": "alibaba",
       "modelsdev_id": "kimi-k3",
       "knowledge_cutoff": null
     },
@@ -7002,8 +7002,8 @@
       "openrouter_id": "nvidia/nemotron-3-nano-30b-a3b",
       "released_at": "2025-12-14",
       "context_length": 262144,
-      "price_input_per_mtok": 0.05,
-      "price_output_per_mtok": 0.2,
+      "price_input_per_mtok": 0.06,
+      "price_output_per_mtok": 0.24,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -10873,7 +10873,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-09-16T11:26:45.088Z",
+    "fetched_at": "2026-09-17T11:38:23.910Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

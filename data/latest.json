@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-17T11:38:23.910Z",
+  "generated_at": "2026-09-19T10:53:17.493Z",
   "arena": {
     "published_at": "2026-09-13",
     "source": "https://arena.ai/leaderboard",
@@ -835,8 +835,8 @@
       "openrouter_id": "z-ai/glm-5.3-flash",
       "released_at": "2026-08-26",
       "context_length": 1310720,
-      "price_input_per_mtok": 0.075,
-      "price_output_per_mtok": 0.25,
+      "price_input_per_mtok": 0.15,
+      "price_output_per_mtok": 0.5,
       "price_match": "strict",
       "price_source": "official",
       "price_provider": "zai",
@@ -5565,8 +5565,8 @@
       "openrouter_id": "openai/gpt-oss-120b",
       "released_at": "2025-08-05",
       "context_length": 131072,
-      "price_input_per_mtok": 0.037,
-      "price_output_per_mtok": 0.17,
+      "price_input_per_mtok": 0.15,
+      "price_output_per_mtok": 0.6,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -10873,7 +10873,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-09-17T11:38:23.910Z",
+    "fetched_at": "2026-09-19T10:53:17.493Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

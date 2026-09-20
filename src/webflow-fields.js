@@ -46,11 +46,13 @@ function bestAtFields() {
   return out;
 }
 
+// use-N-tag removed on purpose. The use-case tags came out of the CMS —
+// they're static markup in the template now, identical on every page — so
+// listing that slug here would recreate it on the next run.
 function useCaseFields() {
   const out = [];
   for (const n of [1, 2, 3, 4]) {
     out.push(
-      { slug: `use-${n}-tag`, displayName: `Use ${n} Tag` },
       { slug: `use-${n}-title`, displayName: `Use ${n} Title` },
       { slug: `use-${n}-body`, displayName: `Use ${n} Body` }
     );
@@ -80,6 +82,8 @@ const FIELDS = [
   // collection; they report as "existing" and are never touched.
   { slug: "gateway-title", displayName: "Gateway title" },
   { slug: "build-title", displayName: "Build title" },
+  { slug: "banner-title", displayName: "Banner title" },
+  { slug: "metrics-title", displayName: "Metrics title" },
 ].map((f) => ({ ...f, type: "PlainText", isRequired: false }));
 
 // Webflow limits authenticated calls to 60/minute. One request per ~1.1s

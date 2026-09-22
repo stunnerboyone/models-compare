@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-21T15:54:37.734Z",
+  "generated_at": "2026-09-22T11:43:42.234Z",
   "arena": {
     "published_at": "2026-09-13",
     "source": "https://arena.ai/leaderboard",
@@ -2541,8 +2541,8 @@
       "openrouter_id": "qwen/qwen3.8-27b",
       "released_at": "2026-08-14",
       "context_length": 1000000,
-      "price_input_per_mtok": 0.2,
-      "price_output_per_mtok": 2.5,
+      "price_input_per_mtok": 0.42,
+      "price_output_per_mtok": 3,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -3001,13 +3001,13 @@
       "arena_votes": 35735,
       "canonical_id": "claude-opus-4",
       "reasoning_mode": "thinking",
-      "openrouter_id": "anthropic/claude-opus-4",
-      "released_at": "2025-05-22",
-      "context_length": 200000,
-      "price_input_per_mtok": 15,
-      "price_output_per_mtok": 75,
-      "price_match": "strict",
-      "price_source": "openrouter"
+      "openrouter_id": null,
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "amazon-nova-experimental-chat-26-02-10",
@@ -3672,13 +3672,13 @@
       "arena_votes": 42845,
       "canonical_id": "claude-opus-4",
       "reasoning_mode": null,
-      "openrouter_id": "anthropic/claude-opus-4",
-      "released_at": "2025-05-22",
-      "context_length": 200000,
-      "price_input_per_mtok": 15,
-      "price_output_per_mtok": 75,
-      "price_match": "strict",
-      "price_source": "openrouter"
+      "openrouter_id": null,
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "mistral-large-3",
@@ -4114,7 +4114,7 @@
       "reasoning_mode": "thinking",
       "openrouter_id": "anthropic/claude-sonnet-4",
       "released_at": "2025-05-22",
-      "context_length": 1000000,
+      "context_length": 200000,
       "price_input_per_mtok": 3,
       "price_output_per_mtok": 15,
       "price_match": "strict",
@@ -4467,7 +4467,7 @@
       "reasoning_mode": null,
       "openrouter_id": "anthropic/claude-sonnet-4",
       "released_at": "2025-05-22",
-      "context_length": 1000000,
+      "context_length": 200000,
       "price_input_per_mtok": 3,
       "price_output_per_mtok": 15,
       "price_match": "strict",
@@ -7002,8 +7002,8 @@
       "openrouter_id": "nvidia/nemotron-3-nano-30b-a3b",
       "released_at": "2025-12-14",
       "context_length": 262144,
-      "price_input_per_mtok": 0.06,
-      "price_output_per_mtok": 0.24,
+      "price_input_per_mtok": 0.05,
+      "price_output_per_mtok": 0.2,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -7722,8 +7722,8 @@
       "openrouter_id": "ibm-granite/granite-4.2-8b",
       "released_at": "2026-08-31",
       "context_length": 131072,
-      "price_input_per_mtok": 0.1,
-      "price_output_per_mtok": 0.15,
+      "price_input_per_mtok": 0.06,
+      "price_output_per_mtok": 0.25,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -10873,19 +10873,19 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-09-21T15:54:37.735Z",
+    "fetched_at": "2026-09-22T11:43:42.234Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
     },
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
-    "matched": 194,
+    "matched": 192,
     "official": 137,
-    "matched_strict": 152,
+    "matched_strict": 150,
     "matched_loose": 42,
     "blocked_ambiguous": 4,
-    "unmatched": 208,
+    "unmatched": 210,
     "coverage_top50": 44,
     "unmatched_models": [
       {
@@ -11043,6 +11043,13 @@
         "reason": "not on openrouter"
       },
       {
+        "arena": "claude-opus-4-20250514-thinking-16k",
+        "canonical": "claude-opus-4",
+        "loose": "claude-opus-4",
+        "org": "anthropic",
+        "reason": "not on openrouter"
+      },
+      {
         "arena": "amazon-nova-experimental-chat-26-02-10",
         "canonical": "amazon-nova-experimental-chat",
         "loose": "amazon-nova-experimental-chat",
@@ -11103,6 +11110,13 @@
         "canonical": "amazon-nova-experimental-chat",
         "loose": "amazon-nova-experimental-chat",
         "org": "amazon",
+        "reason": "not on openrouter"
+      },
+      {
+        "arena": "claude-opus-4-20250514",
+        "canonical": "claude-opus-4",
+        "loose": "claude-opus-4",
+        "org": "anthropic",
         "reason": "not on openrouter"
       },
       {

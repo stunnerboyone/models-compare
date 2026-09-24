@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-23T11:37:27.121Z",
+  "generated_at": "2026-09-24T11:41:50.859Z",
   "arena": {
     "published_at": "2026-09-13",
     "source": "https://arena.ai/leaderboard",
@@ -4801,8 +4801,8 @@
       "openrouter_id": "qwen/qwen3-30b-a3b-instruct-2507",
       "released_at": "2025-07-29",
       "context_length": 262144,
-      "price_input_per_mtok": 0.04815,
-      "price_output_per_mtok": 0.19305,
+      "price_input_per_mtok": 0.1,
+      "price_output_per_mtok": 0.3,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -10873,7 +10873,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-09-23T11:37:27.121Z",
+    "fetched_at": "2026-09-24T11:41:50.859Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

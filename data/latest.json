@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-24T11:41:50.859Z",
+  "generated_at": "2026-09-25T14:39:39.280Z",
   "arena": {
     "published_at": "2026-09-13",
     "source": "https://arena.ai/leaderboard",
@@ -2486,8 +2486,8 @@
       "openrouter_id": "google/gemma-4-26b-a4b-it",
       "released_at": "2026-04-03",
       "context_length": 262144,
-      "price_input_per_mtok": 0.09,
-      "price_output_per_mtok": 0.3,
+      "price_input_per_mtok": 0.0675,
+      "price_output_per_mtok": 0.225,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -10873,7 +10873,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-09-24T11:41:50.859Z",
+    "fetched_at": "2026-09-25T14:39:39.280Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

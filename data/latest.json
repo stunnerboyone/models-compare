@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-26T11:21:08.160Z",
+  "generated_at": "2026-09-29T12:51:33.031Z",
   "arena": {
     "published_at": "2026-09-25",
     "source": "https://arena.ai/leaderboard",
@@ -1878,8 +1878,8 @@
       "openrouter_id": "qwen/qwen3.7-plus",
       "released_at": "2026-06-02",
       "context_length": 1000000,
-      "price_input_per_mtok": 0.5,
-      "price_output_per_mtok": 3,
+      "price_input_per_mtok": 0.4,
+      "price_output_per_mtok": 1.6,
       "price_match": "strict",
       "price_source": "official",
       "price_provider": "alibaba",
@@ -2680,8 +2680,8 @@
       "openrouter_id": "qwen/qwen3.8-27b",
       "released_at": "2026-08-14",
       "context_length": 1000000,
-      "price_input_per_mtok": 0.42,
-      "price_output_per_mtok": 3,
+      "price_input_per_mtok": 0.0407,
+      "price_output_per_mtok": 4.4,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -2706,8 +2706,8 @@
       "openrouter_id": "google/gemma-4-26b-a4b-it",
       "released_at": "2026-04-03",
       "context_length": 262144,
-      "price_input_per_mtok": 0.0675,
-      "price_output_per_mtok": 0.225,
+      "price_input_per_mtok": 0.09,
+      "price_output_per_mtok": 0.3,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -3279,8 +3279,8 @@
       "openrouter_id": "deepseek/deepseek-v3.2",
       "released_at": "2025-12-01",
       "context_length": 163840,
-      "price_input_per_mtok": 0.269,
-      "price_output_per_mtok": 0.4,
+      "price_input_per_mtok": 0.28,
+      "price_output_per_mtok": 0.42,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -3389,8 +3389,8 @@
       "openrouter_id": "deepseek/deepseek-v3.2",
       "released_at": "2025-12-01",
       "context_length": 163840,
-      "price_input_per_mtok": 0.269,
-      "price_output_per_mtok": 0.4,
+      "price_input_per_mtok": 0.28,
+      "price_output_per_mtok": 0.42,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -3597,7 +3597,7 @@
       "openrouter_id": "deepseek/deepseek-v3.1-terminus",
       "released_at": "2025-09-22",
       "context_length": 163840,
-      "price_input_per_mtok": 0.27,
+      "price_input_per_mtok": 0.3,
       "price_output_per_mtok": 1,
       "price_match": "strict",
       "price_source": "openrouter"
@@ -3762,7 +3762,7 @@
       "openrouter_id": "deepseek/deepseek-v3.1-terminus",
       "released_at": "2025-09-22",
       "context_length": 163840,
-      "price_input_per_mtok": 0.27,
+      "price_input_per_mtok": 0.3,
       "price_output_per_mtok": 1,
       "price_match": "strict",
       "price_source": "openrouter"
@@ -4414,12 +4414,15 @@
       "canonical_id": "qwen3.5-flash",
       "reasoning_mode": null,
       "openrouter_id": "qwen/qwen3.5-flash-02-23",
-      "released_at": "2026-02-25",
+      "released_at": "2026-02-23",
       "context_length": 1000000,
-      "price_input_per_mtok": 0.065,
-      "price_output_per_mtok": 0.26,
+      "price_input_per_mtok": 0.1,
+      "price_output_per_mtok": 0.4,
       "price_match": "strict",
-      "price_source": "openrouter"
+      "price_source": "official",
+      "price_provider": "alibaba",
+      "modelsdev_id": "qwen3.5-flash",
+      "knowledge_cutoff": null
     },
     {
       "arena_model_name": "deepseek-v3-0324",
@@ -5024,8 +5027,8 @@
       "openrouter_id": "qwen/qwen3-30b-a3b-instruct-2507",
       "released_at": "2025-07-29",
       "context_length": 262144,
-      "price_input_per_mtok": 0.1,
-      "price_output_per_mtok": 0.3,
+      "price_input_per_mtok": 0.04815,
+      "price_output_per_mtok": 0.19305,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -5759,8 +5762,8 @@
       "openrouter_id": "openai/gpt-oss-120b",
       "released_at": "2025-08-05",
       "context_length": 131072,
-      "price_input_per_mtok": 0.15,
-      "price_output_per_mtok": 0.6,
+      "price_input_per_mtok": 0.037,
+      "price_output_per_mtok": 0.17,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11067,7 +11070,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-09-26T11:21:08.160Z",
+    "fetched_at": "2026-09-29T12:51:33.031Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
@@ -11075,7 +11078,7 @@
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
     "matched": 198,
-    "official": 141,
+    "official": 142,
     "matched_strict": 153,
     "matched_loose": 45,
     "blocked_ambiguous": 4,

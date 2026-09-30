@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-09-29T15:53:11.581Z",
+  "generated_at": "2026-09-30T12:31:44.819Z",
   "arena": {
     "published_at": "2026-09-25",
     "source": "https://arena.ai/leaderboard",
@@ -686,7 +686,7 @@
       "reasoning_mode": null,
       "openrouter_id": "z-ai/glm-5.3",
       "released_at": "2026-08-14",
-      "context_length": 1310720,
+      "context_length": 1048576,
       "price_input_per_mtok": 1.4,
       "price_output_per_mtok": 4.4,
       "price_match": "loose",
@@ -832,8 +832,8 @@
       "openrouter_id": "deepseek/deepseek-v4.1-flash",
       "released_at": "2026-09-10",
       "context_length": 1048576,
-      "price_input_per_mtok": 0.3,
-      "price_output_per_mtok": 1.2,
+      "price_input_per_mtok": 0.0198,
+      "price_output_per_mtok": 0.396,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -1002,7 +1002,7 @@
       "reasoning_mode": null,
       "openrouter_id": "z-ai/glm-5.3-flash",
       "released_at": "2026-08-26",
-      "context_length": 1310720,
+      "context_length": 1048576,
       "price_input_per_mtok": 0.15,
       "price_output_per_mtok": 0.5,
       "price_match": "strict",
@@ -2019,7 +2019,7 @@
       "reasoning_mode": null,
       "openrouter_id": "xiaomi/mimo-v2.6-flash",
       "released_at": "2026-09-21",
-      "context_length": 1048576,
+      "context_length": 1050000,
       "price_input_per_mtok": 0.14,
       "price_output_per_mtok": 0.28,
       "price_match": "strict",
@@ -2681,7 +2681,7 @@
       "released_at": "2026-08-14",
       "context_length": 1000000,
       "price_input_per_mtok": 0.0249,
-      "price_output_per_mtok": 4.4,
+      "price_output_per_mtok": 4.35,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -6693,8 +6693,8 @@
       "openrouter_id": "qwen/qwen3-30b-a3b",
       "released_at": "2025-04-28",
       "context_length": 131072,
-      "price_input_per_mtok": 0.12,
-      "price_output_per_mtok": 0.5,
+      "price_input_per_mtok": 0.13,
+      "price_output_per_mtok": 0.52,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11070,7 +11070,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-09-29T15:53:11.581Z",
+    "fetched_at": "2026-09-30T12:31:44.819Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

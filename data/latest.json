@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-08T13:22:08.605Z",
+  "generated_at": "2026-10-08T16:29:30.341Z",
   "arena": {
     "published_at": "2026-10-02",
     "source": "https://arena.ai/leaderboard",
@@ -1090,7 +1090,7 @@
       "openrouter_id": "deepseek/deepseek-v4.1-flash",
       "released_at": "2026-09-10",
       "context_length": 1048576,
-      "price_input_per_mtok": 0.0356,
+      "price_input_per_mtok": 0.0283,
       "price_output_per_mtok": 1,
       "price_match": "loose",
       "price_source": "openrouter"
@@ -1907,8 +1907,8 @@
       "openrouter_id": "tencent/hy3",
       "released_at": "2026-07-06",
       "context_length": 262144,
-      "price_input_per_mtok": 0.132,
-      "price_output_per_mtok": 0.528,
+      "price_input_per_mtok": 0.0825,
+      "price_output_per_mtok": 0.33,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -5140,8 +5140,8 @@
       "openrouter_id": "qwen/qwen3-30b-a3b-instruct-2507",
       "released_at": "2025-07-29",
       "context_length": 262144,
-      "price_input_per_mtok": 0.04815,
-      "price_output_per_mtok": 0.19305,
+      "price_input_per_mtok": 0.1,
+      "price_output_per_mtok": 0.3,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11180,7 +11180,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-10-08T13:22:08.605Z",
+    "fetched_at": "2026-10-08T16:29:30.341Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

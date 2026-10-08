@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-05T18:31:26.532Z",
+  "generated_at": "2026-10-08T13:22:08.605Z",
   "arena": {
     "published_at": "2026-10-02",
     "source": "https://arena.ai/leaderboard",
@@ -1090,8 +1090,8 @@
       "openrouter_id": "deepseek/deepseek-v4.1-flash",
       "released_at": "2026-09-10",
       "context_length": 1048576,
-      "price_input_per_mtok": 0.3,
-      "price_output_per_mtok": 1.2,
+      "price_input_per_mtok": 0.0356,
+      "price_output_per_mtok": 1,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -1907,8 +1907,8 @@
       "openrouter_id": "tencent/hy3",
       "released_at": "2026-07-06",
       "context_length": 262144,
-      "price_input_per_mtok": 0.0825,
-      "price_output_per_mtok": 0.33,
+      "price_input_per_mtok": 0.132,
+      "price_output_per_mtok": 0.528,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -2101,15 +2101,15 @@
       "arena_votes": 2701,
       "canonical_id": "step-5-preview",
       "reasoning_mode": null,
-      "openrouter_id": null,
-      "price_input_per_mtok": 0.959,
-      "price_output_per_mtok": 2.741,
-      "price_source": "official",
-      "price_provider": "stepfun",
-      "price_match": "strict",
-      "modelsdev_id": "step-5-preview",
+      "openrouter_id": "stepfun/step-5-preview",
       "released_at": "2026-09-16",
       "context_length": 1000000,
+      "price_input_per_mtok": 0.959,
+      "price_output_per_mtok": 2.741,
+      "price_match": "strict",
+      "price_source": "official",
+      "price_provider": "stepfun",
+      "modelsdev_id": "step-5-preview",
       "knowledge_cutoff": null
     },
     {
@@ -2683,7 +2683,7 @@
       "openrouter_id": "thinkingmachines/inkling",
       "released_at": "2026-07-17",
       "context_length": 524288,
-      "price_input_per_mtok": 0.95,
+      "price_input_per_mtok": 1,
       "price_output_per_mtok": 4.05,
       "price_match": "strict",
       "price_source": "openrouter"
@@ -3418,7 +3418,7 @@
       "openrouter_id": "deepseek/deepseek-v3.2",
       "released_at": "2025-12-01",
       "context_length": 163840,
-      "price_input_per_mtok": 0.28,
+      "price_input_per_mtok": 0.259,
       "price_output_per_mtok": 0.42,
       "price_match": "strict",
       "price_source": "openrouter"
@@ -3502,7 +3502,7 @@
       "openrouter_id": "deepseek/deepseek-v3.2",
       "released_at": "2025-12-01",
       "context_length": 163840,
-      "price_input_per_mtok": 0.28,
+      "price_input_per_mtok": 0.259,
       "price_output_per_mtok": 0.42,
       "price_match": "strict",
       "price_source": "openrouter"
@@ -3710,7 +3710,7 @@
       "openrouter_id": "deepseek/deepseek-v3.1-terminus",
       "released_at": "2025-09-22",
       "context_length": 163840,
-      "price_input_per_mtok": 0.3,
+      "price_input_per_mtok": 0.27,
       "price_output_per_mtok": 1,
       "price_match": "strict",
       "price_source": "openrouter"
@@ -3846,7 +3846,7 @@
       "openrouter_id": "deepseek/deepseek-v3.1-terminus",
       "released_at": "2025-09-22",
       "context_length": 163840,
-      "price_input_per_mtok": 0.3,
+      "price_input_per_mtok": 0.27,
       "price_output_per_mtok": 1,
       "price_match": "strict",
       "price_source": "openrouter"
@@ -7179,8 +7179,8 @@
       "openrouter_id": "meta-llama/llama-3.3-70b-instruct",
       "released_at": "2024-12-06",
       "context_length": 131072,
-      "price_input_per_mtok": 0.22,
-      "price_output_per_mtok": 0.5,
+      "price_input_per_mtok": 0.1,
+      "price_output_per_mtok": 0.32,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -7364,8 +7364,8 @@
       "openrouter_id": "nvidia/nemotron-3-nano-30b-a3b",
       "released_at": "2025-12-14",
       "context_length": 262144,
-      "price_input_per_mtok": 0.05,
-      "price_output_per_mtok": 0.2,
+      "price_input_per_mtok": 0.06,
+      "price_output_per_mtok": 0.24,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -7664,7 +7664,7 @@
       "price_match": "loose",
       "modelsdev_id": "magistral-medium-latest",
       "released_at": "2025-03-17",
-      "context_length": 128000,
+      "context_length": 262144,
       "knowledge_cutoff": "2025-06"
     },
     {
@@ -8822,15 +8822,12 @@
       "canonical_id": "ministral-8b-2410",
       "reasoning_mode": null,
       "openrouter_id": "mistralai/ministral-8b-2512",
-      "released_at": "2024-10-01",
+      "released_at": "2025-12-02",
       "context_length": 262144,
-      "price_input_per_mtok": 0.1,
-      "price_output_per_mtok": 0.1,
+      "price_input_per_mtok": 0.15,
+      "price_output_per_mtok": 0.15,
       "price_match": "loose",
-      "price_source": "official",
-      "price_provider": "mistral",
-      "modelsdev_id": "ministral-8b-latest",
-      "knowledge_cutoff": "2024-10"
+      "price_source": "openrouter"
     },
     {
       "arena_model_name": "gemini-pro-dev-api",
@@ -11183,7 +11180,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-10-05T18:31:26.532Z",
+    "fetched_at": "2026-10-08T13:22:08.605Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
@@ -11191,7 +11188,7 @@
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
     "matched": 201,
-    "official": 145,
+    "official": 144,
     "matched_strict": 155,
     "matched_loose": 46,
     "blocked_ambiguous": 4,

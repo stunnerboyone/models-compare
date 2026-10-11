@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-10T12:29:36.835Z",
+  "generated_at": "2026-10-11T15:43:30.944Z",
   "arena": {
     "published_at": "2026-10-08",
     "source": "https://arena.ai/leaderboard",
@@ -2793,8 +2793,8 @@
       "openrouter_id": "qwen/qwen3.8-27b",
       "released_at": "2026-08-14",
       "context_length": 1000000,
-      "price_input_per_mtok": 0.425,
-      "price_output_per_mtok": 2.55,
+      "price_input_per_mtok": 0.04,
+      "price_output_per_mtok": 2.3,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11209,7 +11209,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-10-10T12:29:36.835Z",
+    "fetched_at": "2026-10-11T15:43:30.944Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

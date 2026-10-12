@@ -168,15 +168,14 @@ jobs:
           // the hint goes once at the end rather than under each model.
           if (suggestions.length > 0 && !suggest.suppress) {
             lines.push("SUGGEST (newer models in vendor top-N not in CMS):");
+            const rank = (r) => (r != null ? `rank ${r}` : "unranked");
             const rows = suggestions.flatMap((s) =>
               (s.add ?? []).map((a) => {
-                const tags = [a.rank != null ? `rank ${a.rank}` : "unranked"];
-                if (a.no_price) tags.push("no price");
                 const weakest = (s.replace_candidates ?? [])[0];
                 const against = weakest
-                  ? ` — weakest in CMS: ${weakest.name} (${weakest.rank != null ? `rank ${weakest.rank}` : "unranked"})`
+                  ? ` — weakest in CMS: ${weakest.name} (${rank(weakest.rank)})`
                   : "";
-                return `• ${s.vendor}: + ${a.key} (${tags.join(", ")})${against}`;
+                return `• ${s.vendor}: + ${a.key} (${rank(a.rank)})${against}`;
               })
             );
             lines.push(...rows.slice(0, LIST_CAP));

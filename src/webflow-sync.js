@@ -493,10 +493,10 @@ function buildSuggestions(vendorItems, items, models, warnings) {
     // An empty page is a seeding job, not a staleness problem.
     if (cms.length === 0) continue;
 
-    // requirePrice is off here on purpose: a new model usually lands on the
-    // leaderboard before any price does, and that is exactly when the page
-    // is worth updating. The missing price is reported as a tag instead.
-    const top = pickVendorTop(models, spec, { limit: cms.length, requirePrice: false });
+    // Same selection the seed creates from, price filter included: a model
+    // with no price is not something to put on a page, so it is not something
+    // to suggest either.
+    const top = pickVendorTop(models, spec, { limit: cms.length });
     const topKeys = new Set(top.map((m) => m.arena_model_name));
     const cmsKeys = new Set(
       cms.map((it) => it.fieldData?.["arena-model-name"]).filter(Boolean)
@@ -508,7 +508,6 @@ function buildSuggestions(vendorItems, items, models, warnings) {
         key: m.arena_model_name,
         rank: m.arena_rank ?? null,
         score: m.arena_score ?? null,
-        ...(m.price_source ? {} : { no_price: true }),
       }));
     if (add.length === 0) continue;
 
@@ -537,10 +536,7 @@ function formatRank(rank) {
 }
 
 function formatAddition(addition) {
-  const tags = [formatRank(addition.rank)];
-  // Shown, not filtered out: "worth adding, price still unknown".
-  if (addition.no_price) tags.push("no price");
-  return `${addition.key} (${tags.join(", ")})`;
+  return `${addition.key} (${formatRank(addition.rank)})`;
 }
 
 // The weakest page entry is what a new model would displace, so it travels

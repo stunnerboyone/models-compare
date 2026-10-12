@@ -49,18 +49,16 @@ const rankOrder = (model) => rankValue(model.arena_rank);
  *   organization    must match, narrowed by namePrefix where set
  *   reasoning_mode  null only — the site convention is base variants, so
  *                   claude-opus-5-high is not a separate page entry
- *   requirePrice    drops models with no price. The seed needs that: it
- *                   creates page entries, and an entry with no price reads
- *                   as broken. The sync's top-N check does not — a model is
- *                   often on the leaderboard before any price shows up, and
- *                   that is exactly when it is worth flagging.
+ *   price           required. A page entry with no price reads as broken, so
+ *                   a model with none is not a candidate for either caller:
+ *                   not for the seed to create, not for the sync to suggest.
  */
-export function pickVendorTop(models, { org, namePrefix }, { limit, requirePrice = true } = {}) {
+export function pickVendorTop(models, { org, namePrefix }, { limit } = {}) {
   let list = models
     .filter((m) => m.organization === org)
-    .filter((m) => m.reasoning_mode === null);
+    .filter((m) => m.reasoning_mode === null)
+    .filter((m) => m.price_input_per_mtok != null);
 
-  if (requirePrice) list = list.filter((m) => m.price_input_per_mtok != null);
   if (namePrefix) list = list.filter((m) => m.arena_model_name?.startsWith(namePrefix));
 
   return list.sort((a, b) => rankOrder(a) - rankOrder(b)).slice(0, limit);

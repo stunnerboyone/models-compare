@@ -29,64 +29,218 @@ jobs:
         with:
           node-version: "22"
 
+      # The MISS reminder is deduped across runs, so the notifier has to know
+      # what it reported last time. Cache entries are immutable, so each run
+      # saves under its own key and restores the newest one by prefix.
+      # A miss on the restore (first run, or a 7-day eviction) just means one
+      # extra reminder, never a missing one.
+      - name: Restore MISS reminder state
+        uses: actions/cache/restore@v4
+        with:
+          path: .miss-state.json
+          key: miss-state-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: miss-state-
+
       - name: Push snapshot to Webflow
         env:
           # No .env file exists in CI — that's why the script uses
           # --env-file-if-exists. The token comes from the runner env.
           WEBFLOW_TOKEN: ${{ secrets.WEBFLOW_TOKEN }}
-        # tee keeps the Actions log identical while capturing the summary
-        # for the notify step. pipefail preserves node's exit code so a
-        # sync failure still fails the job (tee itself always exits 0).
+        # tee keeps the Actions log identical while capturing the output for
+        # the failure alert. pipefail preserves node's exit code so a sync
+        # failure still fails the job (tee itself always exits 0).
+        # --report is what the notifier formats from; stdout is for humans.
         run: |
+          echo "Push snapshot to Webflow" > failed-step.txt
           set -o pipefail
-          node --env-file-if-exists=.env src/webflow-sync.js 2>&1 | tee sync.log
+          node --env-file-if-exists=.env src/webflow-sync.js \
+            --report sync-report.json 2>&1 | tee step.log
 
       # Stay quiet on the "nothing to update" runs — that's most of them.
-      # Ping only when the sync actually changed something (updated > 0)
-      # or when a CMS item's arena-model-name has disappeared from the
-      # snapshot (missed > 0), which usually means a model was renamed
-      # or dropped from the leaderboard and the page will otherwise show
-      # stale numbers until someone notices.
-      - name: Notify on change
+      # Ping only when the sync actually changed something (updated > 0) or
+      # when a CMS item's arena-model-name has disappeared from the snapshot
+      # (missed > 0), which usually means a model was renamed or dropped from
+      # the leaderboard and the page will otherwise show stale numbers until
+      # someone notices.
+      #
+      # The message is built from sync-report.json rather than scraped out of
+      # stdout: the counts and the per-item detail come from the same source
+      # the script actually wrote, so a format change in the log cannot turn
+      # the alert into "MISS: 1 item(s)" with no clue which item.
+      - name: Build notification
+        id: notify
         if: success()
         env:
-          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          [ -z "$TG_TOKEN" ] && exit 0
-          [ -f sync.log ] || exit 0
-          line=$(grep -E '^summary: ' sync.log | tail -n 1)
-          [ -z "$line" ] && exit 0
-          matched=$(echo "$line" | sed -n 's/.*matched=\([0-9]*\).*/\1/p')
-          updated=$(echo "$line" | sed -n 's/.*updated=\([0-9]*\).*/\1/p')
-          missed=$(echo  "$line" | sed -n 's/.*missed=\([0-9]*\).*/\1/p')
-          matched=${matched:-0}
-          updated=${updated:-0}
-          missed=${missed:-0}
-          if [ "$updated" -eq 0 ] && [ "$missed" -eq 0 ]; then
-            echo "nothing changed and nothing missed — silent"
-            exit 0
-          fi
-          text="llm-data webflow-sync: updated ${updated} of ${matched} items"
-          if [ "$missed" -gt 0 ]; then
-            text="${text}
-          MISS: ${missed} item(s) no longer in the snapshot — check CMS"
-          fi
-          text="${text}
-          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
-            -d chat_id="${TG_CHAT}" \
-            --data-urlencode "text=${text}" >/dev/null || true
+          echo "Build notification" > failed-step.txt
+          set -o pipefail
+          node --input-type=module - <<'NODE' 2>&1 | tee step.log
+          import { readFileSync, writeFileSync } from "node:fs";
 
-      # Only fires when the job failed — a silent broken cron is the whole
-      # thing we are trying to avoid.
-      - name: Alert on failure
-        if: failure()
+          const REPORT = "sync-report.json";
+          const STATE = ".miss-state.json";
+          const OUT = "tg-message.txt";
+
+          // Telegram's hard cap is 4096; 4000 leaves room for its own framing.
+          const LIMIT = 4000;
+          const LIST_CAP = 10;
+          const CANDIDATES_SHOWN = 3;
+          // A MISS is a standing condition, not an event: it stays missed every
+          // day until a human edits the CMS. Repeat the same set at most this
+          // often so the daily sync does not train everyone to ignore it.
+          const REMIND_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
+
+          const report = JSON.parse(readFileSync(REPORT, "utf8"));
+          const missedItems = report.missed_items ?? [];
+          const updatedItems = report.updated_items ?? [];
+          const missedKeys = missedItems.map((m) => m.key).sort();
+
+          let state = {};
+          try {
+            state = JSON.parse(readFileSync(STATE, "utf8"));
+          } catch {
+            // No cache hit, or a state file this version cannot read. Either
+            // way: treat the current misses as new and report them.
+          }
+
+          const sameSet =
+            Array.isArray(state.keys) &&
+            state.keys.length === missedKeys.length &&
+            state.keys.every((k, i) => k === missedKeys[i]);
+          const lastMs = Date.parse(state.last_notified ?? "");
+          const sinceLast = Number.isFinite(lastMs) ? Date.now() - lastMs : Infinity;
+          const suppressMiss = missedKeys.length > 0 && sameSet && sinceLast < REMIND_AFTER_MS;
+
+          const lines = [
+            `llm-data webflow-sync: updated ${report.updated} of ${report.matched}`,
+          ];
+
+          for (const item of updatedItems.slice(0, LIST_CAP)) {
+            lines.push(`• ${item.name}: ${(item.fields ?? []).join(", ")}`);
+          }
+          if (updatedItems.length > LIST_CAP) {
+            lines.push(`+${updatedItems.length - LIST_CAP} more`);
+          }
+
+          if (missedItems.length > 0 && !suppressMiss) {
+            lines.push("MISS (CMS item no longer in Arena):");
+            for (const item of missedItems.slice(0, LIST_CAP)) {
+              lines.push(`• ${item.name} [${item.key}]`);
+              const candidates = item.candidates ?? [];
+              if (candidates.length > 0) {
+                // "; " not ", ": each candidate already contains a comma.
+                lines.push(`  candidates: ${candidates.slice(0, CANDIDATES_SHOWN).join("; ")}`);
+              }
+              lines.push("  → update Arena model name in CMS or replace the item");
+            }
+            if (missedItems.length > LIST_CAP) {
+              lines.push(`+${missedItems.length - LIST_CAP} more`);
+            }
+          }
+
+          lines.push(process.env.RUN_URL ?? "");
+
+          // Drop detail lines, never the first line or the run link — the link
+          // is what a truncated message is read with.
+          function clamp(all) {
+            const text = all.join("\n");
+            if (text.length <= LIMIT) return text;
+            const head = all[0];
+            const tail = `… truncated, see the run log\n${all[all.length - 1]}`;
+            const kept = [];
+            let size = head.length + 1 + tail.length;
+            for (const line of all.slice(1, -1)) {
+              if (size + line.length + 1 > LIMIT) break;
+              kept.push(line);
+              size += line.length + 1;
+            }
+            return [head, ...kept, tail].join("\n");
+          }
+
+          // Send condition unchanged: updated > 0 or missed > 0. The one
+          // addition is that a MISS-only run whose MISS is being suppressed
+          // has nothing left to say, so it stays silent instead of sending a
+          // bare "updated 0 of N".
+          const gateOpen = report.updated > 0 || report.missed > 0;
+          const hasSomethingToSay = report.updated > 0 || (report.missed > 0 && !suppressMiss);
+
+          if (gateOpen && hasSomethingToSay) {
+            writeFileSync(OUT, clamp(lines));
+            console.log("notification queued");
+          } else if (suppressMiss) {
+            const days = (sinceLast / 86400000).toFixed(1);
+            console.log(`same ${missedKeys.length} missed key(s) as ${days}d ago — silent`);
+          } else {
+            console.log("nothing changed and nothing missed — silent");
+          }
+
+          // Only a reported MISS moves the clock. Suppressed runs keep the old
+          // timestamp, which is what makes the reminder land every 3 days
+          // instead of never. A clean run clears the set so a miss that comes
+          // back is reported at once.
+          if (missedKeys.length === 0) {
+            writeFileSync(STATE, JSON.stringify({ keys: [], last_notified: null }, null, 2));
+          } else if (!suppressMiss) {
+            writeFileSync(
+              STATE,
+              JSON.stringify({ keys: missedKeys, last_notified: new Date().toISOString() }, null, 2)
+            );
+          }
+          NODE
+
+      # Telegram being down must not fail the job: the sync itself already
+      # succeeded, and a red run would then send tomorrow's alert chasing a
+      # problem that does not exist.
+      - name: Notify on change
+        if: success()
+        continue-on-error: true
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           [ -z "$TG_TOKEN" ] && exit 0
+          [ -f tg-message.txt ] || exit 0
+          # text@file: curl reads and urlencodes the file, so newlines and
+          # bullets survive without any shell quoting.
           curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
             -d chat_id="${TG_CHAT}" \
-            -d text="llm-data webflow-sync FAILED — ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >/dev/null
+            --data-urlencode "text@tg-message.txt" >/dev/null || true
+
+      - name: Save MISS reminder state
+        if: success()
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: .miss-state.json
+          key: miss-state-${{ github.run_id }}-${{ github.run_attempt }}
+
+      # Only fires when the job failed — a silent broken cron is the whole
+      # thing we are trying to avoid. Carries the failing step and the tail of
+      # its output so the message answers "why" on its own.
+      - name: Alert on failure
+        if: failure()
+        continue-on-error: true
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          [ -z "$TG_TOKEN" ] && exit 0
+          step=$(cat failed-step.txt 2>/dev/null || true)
+          {
+            echo "llm-data webflow-sync FAILED"
+            echo "step: ${step:-unknown}"
+            if [ -s step.log ]; then
+              echo "--- last 15 lines ---"
+              # 1500 bytes keeps header + log + link well inside the 4000-char
+              # budget. iconv -c drops the half character tail may leave.
+              tail -n 15 step.log | tail -c 1500 | iconv -f utf-8 -t utf-8 -c
+            else
+              echo "(no output captured)"
+            fi
+            echo "${RUN_URL}"
+          } > tg-alert.txt
+          curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            -d chat_id="${TG_CHAT}" \
+            --data-urlencode "text@tg-alert.txt" >/dev/null || true

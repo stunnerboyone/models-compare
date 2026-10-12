@@ -4,6 +4,11 @@
  *
  *   node --env-file-if-exists=.env src/webflow-sync.js
  *   node --env-file-if-exists=.env src/webflow-sync.js --dry-run
+ *   node --env-file-if-exists=.env src/webflow-sync.js --report sync-report.json
+ *
+ * --report writes a machine-readable summary of the run (counts plus the
+ * per-item detail behind them) for the CI notifier to format. It never
+ * changes what goes to stdout.
  *
  * Only PATCHes items that already exist and only touches a fixed set of
  * fields (see FIELD_SLUGS). Never creates, deletes, or writes fields
@@ -15,9 +20,11 @@
  *   1  API failure, invalid latest.json, or missing token
  */
 
-import { readFile } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { canon } from "./match.js";
 
 const TOKEN = process.env.WEBFLOW_TOKEN;
 if (!TOKEN) {
@@ -29,6 +36,23 @@ const API = "https://api.webflow.com/v2";
 const COLLECTION_ID = "6aa6df5545b8d20c8c2936d2"; // Model Versions
 
 const DRY_RUN = process.argv.includes("--dry-run");
+
+function parseReportFlag(argv) {
+  const inline = argv.find((a) => a.startsWith("--report="));
+  if (inline) {
+    const path = inline.slice("--report=".length);
+    if (path) return path;
+  } else {
+    const i = argv.indexOf("--report");
+    if (i === -1) return null;
+    const next = argv[i + 1];
+    if (next && !next.startsWith("--")) return next;
+  }
+  console.error("--report needs a file path");
+  process.exit(1);
+}
+
+const REPORT_PATH = parseReportFlag(process.argv);
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const LATEST = join(ROOT, "data", "latest.json");
@@ -381,6 +405,57 @@ function fmt(v, slug, licenseIdToName) {
   return readable.length > 40 ? readable.slice(0, 37) + "..." : readable;
 }
 
+// A MISS means a CMS item still points at an Arena name this cut does not
+// have. The next question is always "what replaced it", and the answer is
+// usually a sibling: same canonical_id, different reasoning mode — e.g.
+// claude-fable-5 gone, claude-fable-5-high still listed. Surfacing those
+// turns the alert from "something is wrong" into "set this key instead".
+const CANDIDATE_LIMIT = 5;
+
+// Snapshots built before pricing was attached have no canonical_id, so
+// derive it the same way match.js does rather than reporting nothing.
+function canonicalOf(model) {
+  return model.canonical_id ?? canon(model.arena_model_name).id;
+}
+
+function describeCandidate(model) {
+  const mode = model.reasoning_mode ?? "base";
+  const rank = model.arena_rank != null ? `rank ${model.arena_rank}` : "unranked";
+  return `${model.arena_model_name} (reasoning: ${mode}, ${rank})`;
+}
+
+function findCandidates(key, models) {
+  const keyCanon = canon(key).id;
+  let hits = keyCanon ? models.filter((m) => canonicalOf(m) === keyCanon) : [];
+
+  // Nothing shares the canonical id — an outright rename, or a key the
+  // canonicaliser cannot reduce. Fall back to a prefix sweep in both
+  // directions, with a floor on the shorter side so a stub of a key cannot
+  // drag in a whole family.
+  if (hits.length === 0) {
+    const needle = String(key).toLowerCase().trim();
+    hits = models.filter((m) => {
+      const name = String(m.arena_model_name ?? "").toLowerCase();
+      if (!name || name === needle) return false;
+      if (Math.min(name.length, needle.length) < 6) return false;
+      return name.startsWith(needle) || needle.startsWith(name);
+    });
+  }
+
+  return hits
+    .slice()
+    .sort((a, b) => (a.arena_rank ?? Infinity) - (b.arena_rank ?? Infinity))
+    .slice(0, CANDIDATE_LIMIT)
+    .map(describeCandidate);
+}
+
+async function writeReport(path, report) {
+  const target = resolve(path);
+  await mkdir(dirname(target), { recursive: true });
+  await writeFile(target, JSON.stringify(report, null, 2) + "\n");
+  console.log(`report: ${target}`);
+}
+
 async function main() {
   console.log(DRY_RUN ? "mode: DRY RUN (no writes)" : "mode: LIVE (will patch CMS)");
 
@@ -420,13 +495,13 @@ async function main() {
     const key = item.fieldData?.["arena-model-name"];
 
     if (!key || !String(key).trim()) {
-      skipped.push(name);
+      skipped.push({ name, reason: "no arena-model-name set in the CMS" });
       continue;
     }
 
     const model = bySlug.get(key);
     if (!model) {
-      missed.push({ name, key });
+      missed.push({ name, key, candidates: findCandidates(key, snapshot.models) });
       continue;
     }
 
@@ -452,7 +527,7 @@ async function main() {
 
   if (skipped.length) {
     console.log(`\nskipped: no key (${skipped.length})`);
-    for (const n of skipped) console.log(`  - ${n}`);
+    for (const sk of skipped) console.log(`  - ${sk.name}`);
   }
 
   if (missed.length) {
@@ -495,6 +570,27 @@ async function main() {
   console.log(
     `\nsummary: matched=${matched.length} updated=${updatedLabel} unchanged=${unchanged} skipped=${skipped.length} missed=${missed.length}`
   );
+
+  if (REPORT_PATH) {
+    // `updated` counts items actually written, so it stays 0 on a dry run
+    // while updated_items lists what would have been written — dry_run is
+    // what tells those two cases apart.
+    await writeReport(REPORT_PATH, {
+      generated_at: new Date().toISOString(),
+      dry_run: DRY_RUN,
+      matched: matched.length,
+      updated,
+      unchanged,
+      skipped: skipped.length,
+      missed: missed.length,
+      updated_items: toUpdate.map((m) => ({
+        name: m.name,
+        fields: Object.keys(m.changes),
+      })),
+      missed_items: missed,
+      skipped_items: skipped,
+    });
+  }
 }
 
 main().catch((err) => {

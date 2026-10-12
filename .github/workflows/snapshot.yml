@@ -27,45 +27,88 @@ jobs:
         with:
           node-version: "22"
 
+      # Every step that can fail names itself in failed-step.txt and tees its
+      # output to step.log, both overwritten as the job moves on. Whatever is
+      # in them when the job dies belongs to the step that killed it, which is
+      # what the failure alert reports. pipefail keeps the real exit code —
+      # tee always exits 0.
       - name: Fetch and normalize
         id: snap
-        run: node src/snapshot.js
+        run: |
+          echo "Fetch and normalize" > failed-step.txt
+          set -o pipefail
+          node src/snapshot.js 2>&1 | tee step.log
 
       - name: Commit
         id: commit
         run: |
-          if [ -z "$(git status --porcelain data/)" ]; then
-            echo "nothing to commit"
-            echo "committed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          git config user.name  "llm-data bot"
-          git config user.email "actions@github.com"
-          git add data/
-          git commit -m "data: snapshot $(date -u +%F)"
-          git push
-          echo "committed=true" >> "$GITHUB_OUTPUT"
+          echo "Commit" > failed-step.txt
+          set -o pipefail
+          # Braced so the whole step, git's stderr included, lands in step.log.
+          # The group is a subshell, so `exit 0` ends the group, not the step.
+          {
+            if [ -z "$(git status --porcelain data/)" ]; then
+              echo "nothing to commit"
+              echo "committed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            git config user.name  "llm-data bot"
+            git config user.email "actions@github.com"
+            git add data/
+            git commit -m "data: snapshot $(date -u +%F)"
+            git push
+            echo "committed=true" >> "$GITHUB_OUTPUT"
+          } 2>&1 | tee step.log
 
       # Only fires when the job failed — a silent broken cron is the whole
-      # thing we are trying to avoid.
+      # thing we are trying to avoid. Carries the failing step and the tail of
+      # its output so the message answers "why" without opening Actions.
+      # continue-on-error so an unreachable Telegram cannot add a second,
+      # misleading failure on top of the real one.
       - name: Alert on failure
         if: failure()
+        continue-on-error: true
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           [ -z "$TG_TOKEN" ] && exit 0
+          step=$(cat failed-step.txt 2>/dev/null || true)
+          {
+            echo "llm-data snapshot FAILED"
+            echo "step: ${step:-unknown}"
+            if [ -s step.log ]; then
+              echo "--- last 15 lines ---"
+              # 1500 bytes keeps header + log + link well inside Telegram's
+              # 4096-char limit. iconv -c drops the half character that
+              # cutting on a byte count can leave behind.
+              tail -n 15 step.log | tail -c 1500 | iconv -f utf-8 -t utf-8 -c
+            else
+              echo "(no output captured)"
+            fi
+            echo "${RUN_URL}"
+          } > tg-alert.txt
+          # text@file: curl reads and urlencodes the file, so newlines survive
+          # and nothing in the log can break out of shell quoting.
           curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
             -d chat_id="${TG_CHAT}" \
-            -d text="llm-data snapshot FAILED — ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >/dev/null
+            --data-urlencode "text@tg-alert.txt" >/dev/null || true
 
       - name: Notify on change
         if: steps.commit.outputs.committed == 'true'
+        continue-on-error: true
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          # Through the environment, not interpolated into the command: the
+          # summary is free text from the snapshot run.
+          SUMMARY: ${{ steps.snap.outputs.summary }}
         run: |
           [ -z "$TG_TOKEN" ] && exit 0
+          printf 'llm-data: new snapshot committed. %s\n%s\n' \
+            "${SUMMARY:-routine update}" "$RUN_URL" | head -c 4000 > tg-note.txt
           curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
             -d chat_id="${TG_CHAT}" \
-            -d text="llm-data: new snapshot committed. ${{ steps.snap.outputs.summary }}" >/dev/null
+            --data-urlencode "text@tg-note.txt" >/dev/null || true

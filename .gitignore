@@ -5,3 +5,5 @@ match-report.txt
 preview.html
 probe.js
 .env
+sync-report.json
+.miss-state.json

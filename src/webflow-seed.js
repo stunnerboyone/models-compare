@@ -31,6 +31,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { fetchGatewayChatModels } from "./sources/gateway.js";
+import { VENDORS, pickVendorTop } from "./webflow-vendors.js";
 
 const TOKEN = process.env.WEBFLOW_TOKEN;
 if (!TOKEN) {
@@ -44,26 +45,13 @@ const MODELS_ID = "6a72e32efc969860203df096";
 
 const DRY_RUN = process.argv.includes("--dry-run");
 
+// How many models each vendor page gets seeded with. webflow-sync.js uses
+// the count of items already on the page instead, so a page a human has
+// since grown to four keeps all four.
+const TOP_N = 3;
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const LATEST = join(ROOT, "data", "latest.json");
-
-// Vendor label (the item's name in the Models CMS) -> Arena organization.
-// namePrefix is an optional escape hatch: Arena bundles some non-Llama
-// models under organization "meta" (muse-spark-*), so Llama explicitly
-// restricts to arena_model_name starting with "llama". Add the field to
-// any other vendor that ends up in the same situation.
-const VENDORS = [
-  { label: "ChatGPT",    org: "openai" },
-  { label: "Claude",     org: "anthropic" },
-  { label: "Gemini",     org: "google" },
-  { label: "DeepSeek",   org: "deepseek" },
-  { label: "Grok",       org: "xai" },
-  { label: "Llama",      org: "meta", namePrefix: "llama" },
-  { label: "Mistral",    org: "mistral" },
-  { label: "Qwen",       org: "alibaba" },
-  { label: "Copilot",    org: "openai" },
-  { label: "Perplexity", org: "perplexity" },
-];
 
 const BRAND_MAP = {
   gpt: "GPT",
@@ -225,19 +213,6 @@ function canonicalize(name) {
   return name.replace(/-\d{4}-\d{2}-\d{2}$/, "").replace(/-\d{8}$/, "");
 }
 
-function pickTop3(models, { org, namePrefix }) {
-  let list = models
-    .filter((m) => m.organization === org)
-    .filter((m) => m.reasoning_mode === null)
-    .filter((m) => m.price_input_per_mtok != null);
-  if (namePrefix) {
-    list = list.filter((m) => m.arena_model_name?.startsWith(namePrefix));
-  }
-  return list
-    .sort((a, b) => (a.arena_rank ?? Infinity) - (b.arena_rank ?? Infinity))
-    .slice(0, 3);
-}
-
 function buildMatcher(gatewayKeys, snapshotModels) {
   if (!gatewayKeys) return null;
 
@@ -322,7 +297,7 @@ async function main() {
   }
   console.log(`cms:      ${existingItems.length} items in Model Versions`);
 
-  // Resolve every vendor once so we don't run pickTop3 twice or reprint
+  // Resolve every vendor once so we don't run the selection twice or reprint
   // the "vendor not found" warning from two code paths.
   const selections = [];
   for (const vendor of VENDORS) {
@@ -331,8 +306,8 @@ async function main() {
       warnings.push(`vendor "${vendor.label}" not found in Models collection — skipping`);
       continue;
     }
-    const top = pickTop3(snapshot.models, vendor);
-    if (top.length < 3) {
+    const top = pickVendorTop(snapshot.models, vendor, { limit: TOP_N });
+    if (top.length < TOP_N) {
       warnings.push(
         `vendor "${vendor.label}" (${vendor.org}): only ${top.length} base model(s) with price after filtering`
       );

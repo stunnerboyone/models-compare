@@ -15,6 +15,10 @@
  * that a human maintains — name, slug, shown-on, is-default,
  * version-label, price-input-manual, price-output-manual are all safe.
  *
+ * Also reports, and only reports, when Arena has moved a base model into a
+ * vendor's top-N and the CMS has not caught up (SUGGEST). Nothing is created
+ * or replaced for it — that stays a human decision, made in Webflow.
+ *
  * Exit codes:
  *   0  success (MISS entries are warnings, not errors)
  *   1  API failure, invalid latest.json, or missing token
@@ -25,6 +29,7 @@ import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { canon } from "./match.js";
+import { VENDOR_BY_LABEL, pickVendorTop, rankValue } from "./webflow-vendors.js";
 
 const TOKEN = process.env.WEBFLOW_TOKEN;
 if (!TOKEN) {
@@ -34,6 +39,7 @@ if (!TOKEN) {
 
 const API = "https://api.webflow.com/v2";
 const COLLECTION_ID = "6aa6df5545b8d20c8c2936d2"; // Model Versions
+const MODELS_ID = "6a72e32efc969860203df096"; // Models — one item per vendor page
 
 const DRY_RUN = process.argv.includes("--dry-run");
 
@@ -181,7 +187,7 @@ async function fetchLicenseOptions() {
   return { nameToId, idToName };
 }
 
-async function fetchAllItems() {
+async function fetchAllItems(collectionId = COLLECTION_ID) {
   const items = [];
   const limit = 100;
   let offset = 0;
@@ -189,7 +195,7 @@ async function fetchAllItems() {
   for (;;) {
     const page = await api(
       "GET",
-      `/collections/${COLLECTION_ID}/items?limit=${limit}&offset=${offset}`
+      `/collections/${collectionId}/items?limit=${limit}&offset=${offset}`
     );
     const batch = page.items ?? [];
     items.push(...batch);
@@ -449,6 +455,107 @@ function findCandidates(key, models) {
     .map(describeCandidate);
 }
 
+// The sync only ever updates items that already exist, so a model Arena has
+// just promoted into a vendor's top-N is invisible to it: the page keeps
+// showing the models it already lists, with correct numbers, while a stronger
+// one sits outside the CMS. This finds those and says so — nothing here
+// creates or replaces anything.
+//
+// N is the number of items already on the vendor's page, not a constant: the
+// seed starts a page at three, a human may have grown it to four, and either
+// way the question is "are these the N best this vendor has".
+function buildSuggestions(vendorItems, items, models, warnings) {
+  const suggestions = [];
+
+  // Rank comes from this cut rather than the CMS field, which is only as
+  // fresh as the last successful sync.
+  const rankByKey = new Map();
+  for (const m of models) {
+    if (m.arena_model_name) rankByKey.set(m.arena_model_name, m.arena_rank ?? null);
+  }
+
+  for (const vendor of vendorItems) {
+    const label = vendor.fieldData?.name;
+    if (!label) continue;
+
+    const spec = VENDOR_BY_LABEL.get(label);
+    if (!spec) {
+      warnings.push(
+        `vendor "${label}" in Models has no organization mapping in webflow-vendors.js — top-N check skipped`
+      );
+      continue;
+    }
+
+    const cms = items.filter((it) => {
+      const shown = it.fieldData?.["shown-on"];
+      return Array.isArray(shown) && shown.includes(vendor.id);
+    });
+    // An empty page is a seeding job, not a staleness problem.
+    if (cms.length === 0) continue;
+
+    // requirePrice is off here on purpose: a new model usually lands on the
+    // leaderboard before any price does, and that is exactly when the page
+    // is worth updating. The missing price is reported as a tag instead.
+    const top = pickVendorTop(models, spec, { limit: cms.length, requirePrice: false });
+    const topKeys = new Set(top.map((m) => m.arena_model_name));
+    const cmsKeys = new Set(
+      cms.map((it) => it.fieldData?.["arena-model-name"]).filter(Boolean)
+    );
+
+    const add = top
+      .filter((m) => !cmsKeys.has(m.arena_model_name))
+      .map((m) => ({
+        key: m.arena_model_name,
+        rank: m.arena_rank ?? null,
+        score: m.arena_score ?? null,
+        ...(m.price_source ? {} : { no_price: true }),
+      }));
+    if (add.length === 0) continue;
+
+    // Everything on the page that the top-N does not contain, worst first.
+    // An item whose key is gone from Arena ranks as unknown and therefore
+    // sorts first, which is right: it is the most replaceable thing there.
+    const replaceCandidates = cms
+      .filter((it) => !topKeys.has(it.fieldData?.["arena-model-name"]))
+      .map((it) => {
+        const key = it.fieldData?.["arena-model-name"] ?? null;
+        const rank = rankByKey.has(key)
+          ? rankByKey.get(key)
+          : (it.fieldData?.["arena-rank"] ?? null);
+        return { name: it.fieldData?.name ?? it.id, key, rank };
+      })
+      .sort((a, b) => rankValue(b.rank) - rankValue(a.rank));
+
+    suggestions.push({ vendor: label, add, replace_candidates: replaceCandidates });
+  }
+
+  return suggestions;
+}
+
+function formatRank(rank) {
+  return rank != null ? `rank ${rank}` : "unranked";
+}
+
+function formatAddition(addition) {
+  const tags = [formatRank(addition.rank)];
+  // Shown, not filtered out: "worth adding, price still unknown".
+  if (addition.no_price) tags.push("no price");
+  return `${addition.key} (${tags.join(", ")})`;
+}
+
+// The weakest page entry is what a new model would displace, so it travels
+// with the suggestion — otherwise the reader has to open the CMS to find out
+// what is now the weakest thing on the page.
+function formatWeakest(replaceCandidates) {
+  const weakest = replaceCandidates[0];
+  if (!weakest) return "";
+  return ` — weakest in CMS: ${weakest.name} (${formatRank(weakest.rank)})`;
+}
+
+function countAdditions(suggestions) {
+  return suggestions.reduce((n, s) => n + s.add.length, 0);
+}
+
 async function writeReport(path, report) {
   const target = resolve(path);
   await mkdir(dirname(target), { recursive: true });
@@ -478,6 +585,18 @@ async function main() {
   const missed = [];
   const matched = [];
   const warnings = [];
+
+  // The top-N check is the secondary job here. If the Models collection
+  // cannot be read, warn and still sync every metric.
+  let vendorItems = [];
+  try {
+    vendorItems = await fetchAllItems(MODELS_ID);
+    console.log(`vendors:  ${vendorItems.length} items in Models`);
+  } catch (err) {
+    warnings.push(
+      `cannot read the Models collection (${err.message}) — vendor top-N check skipped`
+    );
+  }
 
   // Formatted once, not per item: it is one value for the whole cut, so a
   // bad date is one warning rather than the same line repeated per model.
@@ -535,6 +654,21 @@ async function main() {
     for (const m of missed) console.log(`  - ${m.name}  [key: ${m.key}]`);
   }
 
+  const suggestions = buildSuggestions(vendorItems, items, snapshot.models, warnings);
+
+  if (suggestions.length) {
+    console.log(
+      `\nSUGGEST: newer models in vendor top-N not in CMS (${countAdditions(suggestions)})`
+    );
+    for (const s of suggestions) {
+      for (const addition of s.add) {
+        console.log(
+          `  ${s.vendor}: + ${formatAddition(addition)}${formatWeakest(s.replace_candidates)}`
+        );
+      }
+    }
+  }
+
   if (warnings.length) {
     console.log("\nwarnings:");
     for (const w of warnings) console.log(`  ${w}`);
@@ -589,6 +723,7 @@ async function main() {
       })),
       missed_items: missed,
       skipped_items: skipped,
+      suggestions,
     });
   }
 }

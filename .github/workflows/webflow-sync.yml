@@ -29,12 +29,12 @@ jobs:
         with:
           node-version: "22"
 
-      # The MISS reminder is deduped across runs, so the notifier has to know
-      # what it reported last time. Cache entries are immutable, so each run
-      # saves under its own key and restores the newest one by prefix.
+      # The MISS and SUGGEST reminders are deduped across runs, so the notifier
+      # has to know what it reported last time. Cache entries are immutable, so
+      # each run saves under its own key and restores the newest one by prefix.
       # A miss on the restore (first run, or a 7-day eviction) just means one
       # extra reminder, never a missing one.
-      - name: Restore MISS reminder state
+      - name: Restore reminder state
         uses: actions/cache/restore@v4
         with:
           path: .miss-state.json
@@ -62,6 +62,10 @@ jobs:
       # (missed > 0), which usually means a model was renamed or dropped from
       # the leaderboard and the page will otherwise show stale numbers until
       # someone notices.
+      #
+      # Same for a vendor top-N that has moved on without the CMS (SUGGEST):
+      # the sync cannot fix that one by patching, so saying it is the whole
+      # point. Nothing is created or replaced automatically.
       #
       # The message is built from sync-report.json rather than scraped out of
       # stdout: the counts and the per-item detail come from the same source
@@ -94,23 +98,43 @@ jobs:
           const report = JSON.parse(readFileSync(REPORT, "utf8"));
           const missedItems = report.missed_items ?? [];
           const updatedItems = report.updated_items ?? [];
+          const suggestions = report.suggestions ?? [];
           const missedKeys = missedItems.map((m) => m.key).sort();
+          // vendor:key — the same model can be suggested for two vendor pages
+          // (ChatGPT and Copilot share an org), and those are two separate
+          // things to fix.
+          const suggestKeys = suggestions
+            .flatMap((s) => (s.add ?? []).map((a) => `${s.vendor}:${a.key}`))
+            .sort();
 
           let state = {};
           try {
             state = JSON.parse(readFileSync(STATE, "utf8"));
           } catch {
             // No cache hit, or a state file this version cannot read. Either
-            // way: treat the current misses as new and report them.
+            // way: treat the current findings as new and report them.
           }
 
-          const sameSet =
-            Array.isArray(state.keys) &&
-            state.keys.length === missedKeys.length &&
-            state.keys.every((k, i) => k === missedKeys[i]);
-          const lastMs = Date.parse(state.last_notified ?? "");
-          const sinceLast = Number.isFinite(lastMs) ? Date.now() - lastMs : Infinity;
-          const suppressMiss = missedKeys.length > 0 && sameSet && sinceLast < REMIND_AFTER_MS;
+          // Both MISS and SUGGEST are standing conditions with the same shape:
+          // the same set of keys, day after day, until a human edits the CMS.
+          // Each keeps its own clock, so a new suggestion is not silenced by a
+          // MISS that was reported yesterday.
+          function decide(currentKeys, savedKeys, savedAt) {
+            const sinceLast = Number.isFinite(Date.parse(savedAt ?? ""))
+              ? Date.now() - Date.parse(savedAt)
+              : Infinity;
+            const sameSet =
+              Array.isArray(savedKeys) &&
+              savedKeys.length === currentKeys.length &&
+              savedKeys.every((k, i) => k === currentKeys[i]);
+            return {
+              sinceLast,
+              suppress: currentKeys.length > 0 && sameSet && sinceLast < REMIND_AFTER_MS,
+            };
+          }
+
+          const miss = decide(missedKeys, state.keys, state.last_notified);
+          const suggest = decide(suggestKeys, state.suggest_keys, state.suggest_notified);
 
           const lines = [
             `llm-data webflow-sync: updated ${report.updated} of ${report.matched}`,
@@ -123,7 +147,7 @@ jobs:
             lines.push(`+${updatedItems.length - LIST_CAP} more`);
           }
 
-          if (missedItems.length > 0 && !suppressMiss) {
+          if (missedItems.length > 0 && !miss.suppress) {
             lines.push("MISS (CMS item no longer in Arena):");
             for (const item of missedItems.slice(0, LIST_CAP)) {
               lines.push(`• ${item.name} [${item.key}]`);
@@ -137,6 +161,27 @@ jobs:
             if (missedItems.length > LIST_CAP) {
               lines.push(`+${missedItems.length - LIST_CAP} more`);
             }
+          }
+
+          // Same wording as the script's SUGGEST block, so the alert and the
+          // run log read the same. The action is identical for every line, so
+          // the hint goes once at the end rather than under each model.
+          if (suggestions.length > 0 && !suggest.suppress) {
+            lines.push("SUGGEST (newer models in vendor top-N not in CMS):");
+            const rows = suggestions.flatMap((s) =>
+              (s.add ?? []).map((a) => {
+                const tags = [a.rank != null ? `rank ${a.rank}` : "unranked"];
+                if (a.no_price) tags.push("no price");
+                const weakest = (s.replace_candidates ?? [])[0];
+                const against = weakest
+                  ? ` — weakest in CMS: ${weakest.name} (${weakest.rank != null ? `rank ${weakest.rank}` : "unranked"})`
+                  : "";
+                return `• ${s.vendor}: + ${a.key} (${tags.join(", ")})${against}`;
+              })
+            );
+            lines.push(...rows.slice(0, LIST_CAP));
+            if (rows.length > LIST_CAP) lines.push(`+${rows.length - LIST_CAP} more`);
+            lines.push("  → add the model version in CMS, or swap it for the weakest");
           }
 
           lines.push(process.env.RUN_URL ?? "");
@@ -158,35 +203,67 @@ jobs:
             return [head, ...kept, tail].join("\n");
           }
 
-          // Send condition unchanged: updated > 0 or missed > 0. The one
-          // addition is that a MISS-only run whose MISS is being suppressed
-          // has nothing left to say, so it stays silent instead of sending a
-          // bare "updated 0 of N".
-          const gateOpen = report.updated > 0 || report.missed > 0;
-          const hasSomethingToSay = report.updated > 0 || (report.missed > 0 && !suppressMiss);
+          // Send when the sync changed something, a CMS item has fallen out of
+          // Arena, or a vendor's top-N has moved on without the CMS. A run
+          // whose only finding is being suppressed as a repeat has nothing
+          // left to say, so it stays silent rather than sending a bare
+          // "updated 0 of N".
+          const gateOpen =
+            report.updated > 0 || report.missed > 0 || suggestions.length > 0;
+          const hasSomethingToSay =
+            report.updated > 0 ||
+            (missedItems.length > 0 && !miss.suppress) ||
+            (suggestions.length > 0 && !suggest.suppress);
+
+          const days = (ms) => (ms / 86400000).toFixed(1);
 
           if (gateOpen && hasSomethingToSay) {
             writeFileSync(OUT, clamp(lines));
             console.log("notification queued");
-          } else if (suppressMiss) {
-            const days = (sinceLast / 86400000).toFixed(1);
-            console.log(`same ${missedKeys.length} missed key(s) as ${days}d ago — silent`);
+          } else if (miss.suppress || suggest.suppress) {
+            const held = [];
+            if (miss.suppress) {
+              held.push(`${missedKeys.length} missed key(s), last sent ${days(miss.sinceLast)}d ago`);
+            }
+            if (suggest.suppress) {
+              held.push(
+                `${suggestKeys.length} suggestion(s), last sent ${days(suggest.sinceLast)}d ago`
+              );
+            }
+            console.log(`unchanged repeat — silent: ${held.join("; ")}`);
           } else {
-            console.log("nothing changed and nothing missed — silent");
+            console.log("nothing changed, nothing missed, nothing to suggest — silent");
           }
 
-          // Only a reported MISS moves the clock. Suppressed runs keep the old
-          // timestamp, which is what makes the reminder land every 3 days
-          // instead of never. A clean run clears the set so a miss that comes
-          // back is reported at once.
+          // Only a finding that was actually reported moves its clock.
+          // Suppressed runs keep the old timestamp, which is what makes the
+          // reminder land every 3 days instead of never; a set that empties
+          // resets, so the same finding coming back is reported at once.
+          const now = new Date().toISOString();
+          const nextState = {
+            keys: Array.isArray(state.keys) ? state.keys : [],
+            last_notified: state.last_notified ?? null,
+            suggest_keys: Array.isArray(state.suggest_keys) ? state.suggest_keys : [],
+            suggest_notified: state.suggest_notified ?? null,
+          };
+
           if (missedKeys.length === 0) {
-            writeFileSync(STATE, JSON.stringify({ keys: [], last_notified: null }, null, 2));
-          } else if (!suppressMiss) {
-            writeFileSync(
-              STATE,
-              JSON.stringify({ keys: missedKeys, last_notified: new Date().toISOString() }, null, 2)
-            );
+            nextState.keys = [];
+            nextState.last_notified = null;
+          } else if (!miss.suppress) {
+            nextState.keys = missedKeys;
+            nextState.last_notified = now;
           }
+
+          if (suggestKeys.length === 0) {
+            nextState.suggest_keys = [];
+            nextState.suggest_notified = null;
+          } else if (!suggest.suppress) {
+            nextState.suggest_keys = suggestKeys;
+            nextState.suggest_notified = now;
+          }
+
+          writeFileSync(STATE, JSON.stringify(nextState, null, 2));
           NODE
 
       # Telegram being down must not fail the job: the sync itself already
@@ -207,7 +284,7 @@ jobs:
             -d chat_id="${TG_CHAT}" \
             --data-urlencode "text@tg-message.txt" >/dev/null || true
 
-      - name: Save MISS reminder state
+      - name: Save reminder state
         if: success()
         continue-on-error: true
         uses: actions/cache/save@v4

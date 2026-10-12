@@ -2,9 +2,14 @@ name: webflow-sync
 
 on:
   schedule:
-    # 06:45 UTC daily, 30 minutes after the snapshot cron so the sync
-    # picks up whatever the snapshot job just committed.
+    # One sync per snapshot run, each 30 minutes behind its pair, so the
+    # sync picks up whatever that snapshot job just committed.
+    # Pairs with snapshot's 06:15 run.
     - cron: "45 6 * * *"
+    # Pairs with snapshot's 09:15 retry. Without this, data that only
+    # arrives on the second attempt would sit unsynced until the next
+    # morning. A run with nothing new is a no-op.
+    - cron: "45 9 * * *"
   workflow_dispatch:
 
 permissions:

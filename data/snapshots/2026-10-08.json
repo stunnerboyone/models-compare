@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-13T14:06:38.617Z",
+  "generated_at": "2026-10-13T17:08:05.523Z",
   "arena": {
     "published_at": "2026-10-08",
     "source": "https://arena.ai/leaderboard",
@@ -26,13 +26,16 @@
       "arena_votes": 4892,
       "canonical_id": "gemini-4-argon",
       "reasoning_mode": "high",
-      "openrouter_id": null,
-      "released_at": null,
-      "context_length": null,
-      "price_input_per_mtok": null,
-      "price_output_per_mtok": null,
-      "price_match": null,
-      "price_source": null
+      "openrouter_id": "google/gemini-4-argon",
+      "released_at": "2026-10-13",
+      "context_length": 1048576,
+      "price_input_per_mtok": 2,
+      "price_output_per_mtok": 10,
+      "price_match": "strict",
+      "price_source": "official",
+      "price_provider": "google",
+      "modelsdev_id": "gemini-4-argon",
+      "knowledge_cutoff": "2026-03"
     },
     {
       "arena_model_name": "claude-opus-5.5-high",
@@ -1119,8 +1122,8 @@
       "openrouter_id": "deepseek/deepseek-v4.1-flash",
       "released_at": "2026-09-10",
       "context_length": 1048576,
-      "price_input_per_mtok": 0.0438,
-      "price_output_per_mtok": 0.1752,
+      "price_input_per_mtok": 0.0441,
+      "price_output_per_mtok": 0.63,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -2078,8 +2081,8 @@
       "openrouter_id": "tencent/hy3",
       "released_at": "2026-07-06",
       "context_length": 262144,
-      "price_input_per_mtok": 0.132,
-      "price_output_per_mtok": 0.528,
+      "price_input_per_mtok": 0.0825,
+      "price_output_per_mtok": 0.33,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11209,28 +11212,21 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-10-13T14:06:38.617Z",
+    "fetched_at": "2026-10-13T17:08:05.523Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
     },
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
-    "matched": 202,
-    "official": 145,
-    "matched_strict": 154,
+    "matched": 203,
+    "official": 146,
+    "matched_strict": 155,
     "matched_loose": 48,
     "blocked_ambiguous": 4,
-    "unmatched": 212,
-    "coverage_top50": 45,
+    "unmatched": 211,
+    "coverage_top50": 46,
     "unmatched_models": [
-      {
-        "arena": "gemini-4-argon-high",
-        "canonical": "gemini-4-argon",
-        "loose": "gemini-4-argon",
-        "org": "google",
-        "reason": "not on openrouter"
-      },
       {
         "arena": "muse-spark",
         "canonical": "muse-spark",

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-14T11:46:29.056Z",
+  "generated_at": "2026-10-15T11:25:09.420Z",
   "arena": {
     "published_at": "2026-10-13",
     "source": "https://arena.ai/leaderboard",
@@ -1090,8 +1090,8 @@
       "openrouter_id": "deepseek/deepseek-v4.1-flash",
       "released_at": "2026-09-10",
       "context_length": 1048576,
-      "price_input_per_mtok": 0.02016,
-      "price_output_per_mtok": 0.891,
+      "price_input_per_mtok": 0.02376,
+      "price_output_per_mtok": 0.72,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -2162,8 +2162,8 @@
       "openrouter_id": "google/gemma-4-31b-it",
       "released_at": "2026-04-02",
       "context_length": 262144,
-      "price_input_per_mtok": 0.09,
-      "price_output_per_mtok": 0.34,
+      "price_input_per_mtok": 0.2,
+      "price_output_per_mtok": 0.4,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -2427,7 +2427,7 @@
       "reasoning_mode": null,
       "openrouter_id": "stepfun/step-5-preview",
       "released_at": "2026-09-16",
-      "context_length": 1000000,
+      "context_length": 1048576,
       "price_input_per_mtok": 0.959,
       "price_output_per_mtok": 2.741,
       "price_match": "strict",
@@ -2822,8 +2822,8 @@
       "openrouter_id": "qwen/qwen3.8-27b",
       "released_at": "2026-08-14",
       "context_length": 1000000,
-      "price_input_per_mtok": 0.04,
-      "price_output_per_mtok": 2.3,
+      "price_input_per_mtok": 0.24,
+      "price_output_per_mtok": 2.2,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -5687,13 +5687,10 @@
       "openrouter_id": "nvidia/nemotron-3-super-120b-a12b",
       "released_at": "2026-03-11",
       "context_length": 262144,
-      "price_input_per_mtok": 0.2,
-      "price_output_per_mtok": 0.8,
+      "price_input_per_mtok": 0.08,
+      "price_output_per_mtok": 0.45,
       "price_match": "loose",
-      "price_source": "official",
-      "price_provider": "nvidia",
-      "modelsdev_id": "nvidia/nemotron-3-super-120b-a12b",
-      "knowledge_cutoff": "2024-04"
+      "price_source": "openrouter"
     },
     {
       "arena_model_name": "gemini-2.0-flash-001",
@@ -5933,8 +5930,8 @@
       "openrouter_id": "openai/gpt-oss-120b",
       "released_at": "2025-08-05",
       "context_length": 131072,
-      "price_input_per_mtok": 0.037,
-      "price_output_per_mtok": 0.17,
+      "price_input_per_mtok": 0.15,
+      "price_output_per_mtok": 0.6,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -9149,7 +9146,7 @@
       "released_at": "2026-04-27",
       "context_length": 1048576,
       "price_input_per_mtok": 2,
-      "price_output_per_mtok": 12,
+      "price_output_per_mtok": 10,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11238,7 +11235,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-10-14T11:46:29.056Z",
+    "fetched_at": "2026-10-15T11:25:09.420Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
@@ -11246,7 +11243,7 @@
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
     "matched": 204,
-    "official": 146,
+    "official": 145,
     "matched_strict": 155,
     "matched_loose": 49,
     "blocked_ambiguous": 4,

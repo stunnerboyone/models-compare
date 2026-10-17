@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-16T11:16:49.003Z",
+  "generated_at": "2026-10-17T10:44:04.286Z",
   "arena": {
     "published_at": "2026-10-15",
     "source": "https://arena.ai/leaderboard",
@@ -1087,13 +1087,13 @@
       "arena_votes": 12793,
       "canonical_id": "deepseek-v4.1-flash-max",
       "reasoning_mode": null,
-      "openrouter_id": "deepseek/deepseek-v4.1-flash",
-      "released_at": "2026-09-10",
-      "context_length": 1048576,
-      "price_input_per_mtok": 0.036,
-      "price_output_per_mtok": 0.684,
-      "price_match": "loose",
-      "price_source": "openrouter"
+      "openrouter_id": null,
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "qwen3.7-max-preview",
@@ -2848,8 +2848,8 @@
       "openrouter_id": "google/gemma-4-26b-a4b-it",
       "released_at": "2026-04-03",
       "context_length": 262144,
-      "price_input_per_mtok": 0.09,
-      "price_output_per_mtok": 0.3,
+      "price_input_per_mtok": 0.0675,
+      "price_output_per_mtok": 0.225,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -3450,8 +3450,8 @@
       "openrouter_id": "deepseek/deepseek-v3.2",
       "released_at": "2025-12-01",
       "context_length": 163840,
-      "price_input_per_mtok": 0.259,
-      "price_output_per_mtok": 0.8,
+      "price_input_per_mtok": 0.28,
+      "price_output_per_mtok": 0.42,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -3560,8 +3560,8 @@
       "openrouter_id": "deepseek/deepseek-v3.2",
       "released_at": "2025-12-01",
       "context_length": 163840,
-      "price_input_per_mtok": 0.259,
-      "price_output_per_mtok": 0.8,
+      "price_input_per_mtok": 0.28,
+      "price_output_per_mtok": 0.42,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11261,20 +11261,20 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-10-16T11:16:49.003Z",
+    "fetched_at": "2026-10-17T10:44:04.286Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
     },
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
-    "matched": 202,
+    "matched": 201,
     "official": 145,
     "matched_strict": 153,
-    "matched_loose": 49,
-    "blocked_ambiguous": 4,
-    "unmatched": 214,
-    "coverage_top50": 46,
+    "matched_loose": 48,
+    "blocked_ambiguous": 5,
+    "unmatched": 215,
+    "coverage_top50": 45,
     "unmatched_models": [
       {
         "arena": "Muse Spark",
@@ -11289,6 +11289,13 @@
         "loose": "gemini-3-pro",
         "org": "google",
         "reason": "not on openrouter"
+      },
+      {
+        "arena": "deepseek-v4.1-flash-max",
+        "canonical": "deepseek-v4.1-flash-max",
+        "loose": "v4.1-flash",
+        "org": "deepseek",
+        "reason": "ambiguous"
       },
       {
         "arena": "gpt-5.5-instant",

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-17T10:44:04.286Z",
+  "generated_at": "2026-10-19T16:31:13.372Z",
   "arena": {
     "published_at": "2026-10-15",
     "source": "https://arena.ai/leaderboard",
@@ -2107,8 +2107,8 @@
       "openrouter_id": "tencent/hy3",
       "released_at": "2026-07-06",
       "context_length": 262144,
-      "price_input_per_mtok": 0.132,
-      "price_output_per_mtok": 0.528,
+      "price_input_per_mtok": 0.0825,
+      "price_output_per_mtok": 0.33,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -2848,8 +2848,8 @@
       "openrouter_id": "google/gemma-4-26b-a4b-it",
       "released_at": "2026-04-03",
       "context_length": 262144,
-      "price_input_per_mtok": 0.0675,
-      "price_output_per_mtok": 0.225,
+      "price_input_per_mtok": 0.09,
+      "price_output_per_mtok": 0.3,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -2927,7 +2927,7 @@
       "canonical_id": "deepseek-v4-flash",
       "reasoning_mode": null,
       "openrouter_id": "deepseek/deepseek-v4-flash",
-      "released_at": "2026-09-10",
+      "released_at": "2026-10-17",
       "context_length": 1048576,
       "price_input_per_mtok": 0.15,
       "price_output_per_mtok": 0.6,
@@ -4584,13 +4584,13 @@
       "arena_votes": 18524,
       "canonical_id": "deepseek-r1",
       "reasoning_mode": null,
-      "openrouter_id": "deepseek/deepseek-r1",
-      "released_at": "2025-01-20",
-      "context_length": 64000,
-      "price_input_per_mtok": 0.7,
-      "price_output_per_mtok": 2.5,
-      "price_match": "strict",
-      "price_source": "openrouter"
+      "openrouter_id": null,
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "qwen3.5-flash",
@@ -5224,7 +5224,7 @@
       "openrouter_id": "qwen/qwen3-30b-a3b-instruct-2507",
       "released_at": "2025-07-29",
       "context_length": 262144,
-      "price_input_per_mtok": 0.1,
+      "price_input_per_mtok": 0.09,
       "price_output_per_mtok": 0.3,
       "price_match": "strict",
       "price_source": "openrouter"
@@ -5555,7 +5555,7 @@
       "released_at": "2025-03-12",
       "context_length": 131072,
       "price_input_per_mtok": 0.08,
-      "price_output_per_mtok": 0.45,
+      "price_output_per_mtok": 0.35,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -10032,8 +10032,8 @@
       "openrouter_id": "meta-llama/llama-3.2-3b-instruct",
       "released_at": "2024-09-25",
       "context_length": 131072,
-      "price_input_per_mtok": 0.05,
-      "price_output_per_mtok": 0.33,
+      "price_input_per_mtok": 0.0509,
+      "price_output_per_mtok": 0.335,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11261,19 +11261,19 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-10-17T10:44:04.286Z",
+    "fetched_at": "2026-10-19T16:31:13.372Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
     },
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
-    "matched": 201,
+    "matched": 200,
     "official": 145,
-    "matched_strict": 153,
+    "matched_strict": 152,
     "matched_loose": 48,
-    "blocked_ambiguous": 5,
-    "unmatched": 215,
+    "blocked_ambiguous": 6,
+    "unmatched": 216,
     "coverage_top50": 45,
     "unmatched_models": [
       {
@@ -11569,6 +11569,13 @@
         "loose": "longcat-flash-chat",
         "org": "meituan",
         "reason": "not on openrouter"
+      },
+      {
+        "arena": "deepseek-r1",
+        "canonical": "deepseek-r1",
+        "loose": "deepseek-r1",
+        "org": "deepseek",
+        "reason": "ambiguous"
       },
       {
         "arena": "deepseek-v3-0324",

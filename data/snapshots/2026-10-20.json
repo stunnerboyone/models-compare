@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-21T11:49:44.970Z",
+  "generated_at": "2026-10-22T11:50:02.728Z",
   "arena": {
     "published_at": "2026-10-20",
     "source": "https://arena.ai/leaderboard",
@@ -2911,7 +2911,7 @@
       "openrouter_id": "reflection/beam-1.0-501b-a23b",
       "released_at": "2026-10-16",
       "context_length": 1048576,
-      "price_input_per_mtok": 0.3,
+      "price_input_per_mtok": 0.25,
       "price_output_per_mtok": 1,
       "price_match": "strict",
       "price_source": "openrouter"
@@ -3377,13 +3377,10 @@
       "openrouter_id": "nvidia/nemotron-3-ultra-550b-a55b",
       "released_at": "2026-06-04",
       "context_length": 262144,
-      "price_input_per_mtok": 0.5,
-      "price_output_per_mtok": 2.5,
+      "price_input_per_mtok": 0.6,
+      "price_output_per_mtok": 2.4,
       "price_match": "loose",
-      "price_source": "official",
-      "price_provider": "nvidia",
-      "modelsdev_id": "nvidia/nemotron-3-ultra-550b-a55b",
-      "knowledge_cutoff": "2025-09"
+      "price_source": "openrouter"
     },
     {
       "arena_model_name": "Claude Opus 4 (Thinking 16K, 20250514)",
@@ -11245,7 +11242,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-10-21T11:49:44.970Z",
+    "fetched_at": "2026-10-22T11:50:02.728Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
@@ -11253,7 +11250,7 @@
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
     "matched": 185,
-    "official": 131,
+    "official": 130,
     "matched_strict": 143,
     "matched_loose": 42,
     "blocked_ambiguous": 6,

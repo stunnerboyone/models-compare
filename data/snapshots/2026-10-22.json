@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-26T16:10:36.990Z",
+  "generated_at": "2026-10-27T12:11:02.614Z",
   "arena": {
     "published_at": "2026-10-22",
     "source": "https://arena.ai/leaderboard",
@@ -1446,8 +1446,8 @@
       "openrouter_id": "xiaomi/mimo-v2.5-pro",
       "released_at": "2026-04-22",
       "context_length": 1050000,
-      "price_input_per_mtok": 0.3045,
-      "price_output_per_mtok": 0.609,
+      "price_input_per_mtok": 0.48,
+      "price_output_per_mtok": 1.8,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -2092,8 +2092,8 @@
       "openrouter_id": "tencent/hy3",
       "released_at": "2026-07-06",
       "context_length": 262144,
-      "price_input_per_mtok": 0.0825,
-      "price_output_per_mtok": 0.33,
+      "price_input_per_mtok": 0.132,
+      "price_output_per_mtok": 0.528,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -3053,8 +3053,8 @@
       "openrouter_id": "xiaomi/mimo-v2.5",
       "released_at": "2026-04-22",
       "context_length": 1050000,
-      "price_input_per_mtok": 0.119,
-      "price_output_per_mtok": 0.238,
+      "price_input_per_mtok": 0.4,
+      "price_output_per_mtok": 2,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -7805,8 +7805,8 @@
       "openrouter_id": "google/gemma-3-4b-it",
       "released_at": "2025-03-13",
       "context_length": 131072,
-      "price_input_per_mtok": 0.04,
-      "price_output_per_mtok": 0.05,
+      "price_input_per_mtok": 0.05,
+      "price_output_per_mtok": 0.1,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11265,7 +11265,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-10-26T16:10:36.990Z",
+    "fetched_at": "2026-10-27T12:11:02.614Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

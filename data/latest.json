@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-01T13:21:59.198Z",
+  "generated_at": "2026-11-01T16:03:42.571Z",
   "arena": {
     "published_at": "2026-10-28",
     "source": "https://arena.ai/leaderboard",
@@ -2118,8 +2118,8 @@
       "openrouter_id": "tencent/hy3",
       "released_at": "2026-07-06",
       "context_length": 262144,
-      "price_input_per_mtok": 0.132,
-      "price_output_per_mtok": 0.528,
+      "price_input_per_mtok": 0.0825,
+      "price_output_per_mtok": 0.33,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -6021,8 +6021,8 @@
       "openrouter_id": "openai/gpt-oss-120b",
       "released_at": "2025-08-05",
       "context_length": 131072,
-      "price_input_per_mtok": 0.017,
-      "price_output_per_mtok": 0.062,
+      "price_input_per_mtok": 0.02,
+      "price_output_per_mtok": 0.075,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11291,7 +11291,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-11-01T13:21:59.198Z",
+    "fetched_at": "2026-11-01T16:03:42.571Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

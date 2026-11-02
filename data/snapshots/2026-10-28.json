@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-01T16:03:42.571Z",
+  "generated_at": "2026-11-02T15:50:12.319Z",
   "arena": {
     "published_at": "2026-10-28",
     "source": "https://arena.ai/leaderboard",
@@ -2118,8 +2118,8 @@
       "openrouter_id": "tencent/hy3",
       "released_at": "2026-07-06",
       "context_length": 262144,
-      "price_input_per_mtok": 0.0825,
-      "price_output_per_mtok": 0.33,
+      "price_input_per_mtok": 0.132,
+      "price_output_per_mtok": 0.528,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -2830,8 +2830,8 @@
       "openrouter_id": "google/gemma-4-26b-a4b-it",
       "released_at": "2026-04-03",
       "context_length": 262144,
-      "price_input_per_mtok": 0.0675,
-      "price_output_per_mtok": 0.225,
+      "price_input_per_mtok": 0.085,
+      "price_output_per_mtok": 0.255,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -2965,7 +2965,7 @@
       "reasoning_mode": null,
       "openrouter_id": "qwen/qwen3.8-27b",
       "released_at": "2026-08-14",
-      "context_length": 1000000,
+      "context_length": 1024000,
       "price_input_per_mtok": 0.15,
       "price_output_per_mtok": 1.875,
       "price_match": "strict",
@@ -6021,8 +6021,8 @@
       "openrouter_id": "openai/gpt-oss-120b",
       "released_at": "2025-08-05",
       "context_length": 131072,
-      "price_input_per_mtok": 0.02,
-      "price_output_per_mtok": 0.075,
+      "price_input_per_mtok": 0.15,
+      "price_output_per_mtok": 0.6,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -10062,8 +10062,8 @@
       "openrouter_id": "meta-llama/llama-3.2-3b-instruct",
       "released_at": "2024-09-25",
       "context_length": 131072,
-      "price_input_per_mtok": 0.05,
-      "price_output_per_mtok": 0.33,
+      "price_input_per_mtok": 0.0509,
+      "price_output_per_mtok": 0.335,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11291,7 +11291,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-11-01T16:03:42.571Z",
+    "fetched_at": "2026-11-02T15:50:12.319Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

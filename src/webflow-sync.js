@@ -62,6 +62,7 @@ const REPORT_PATH = parseReportFlag(process.argv);
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const LATEST = join(ROOT, "data", "latest.json");
+const ALIASES = join(ROOT, "config", "arena-aliases.json");
 
 const PROVIDER_MAP = {
   anthropic: "Anthropic",
@@ -160,6 +161,71 @@ async function readSnapshot() {
     throw new Error("latest.json has no models");
   }
   return doc;
+}
+
+// Old CMS key -> canonical_id, for items whose arena-model-name no longer
+// normalises to anything in the snapshot (renames, dated suffixes). A missing
+// file just means no aliases.
+async function readAliases() {
+  let raw;
+  try {
+    raw = await readFile(ALIASES, "utf8");
+  } catch (err) {
+    if (err.code === "ENOENT") return {};
+    throw new Error(`cannot read config/arena-aliases.json — ${err.message}`);
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    throw new Error(`invalid arena-aliases.json — ${err.message}`);
+  }
+}
+
+// Arena moved from slugs ("claude-opus-4-7") to display names
+// ("Claude Opus 4.7"), while CMS items keep the slug. Both sides, plus
+// canonical_id ("claude-opus-4.7"), reduce to the same key here.
+function norm(s) {
+  return String(s ?? "")
+    .toLowerCase()
+    .replace(/[()]/g, "")
+    .replace(/[.\s_,]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+// Base variants only — site convention. Each model is reachable by both its
+// canonical_id and its arena_model_name. A key that normalises onto two
+// different models keeps the first and warns rather than guessing silently.
+function buildIndex(models, warnings) {
+  const index = new Map();
+  for (const m of models) {
+    if (m.reasoning_mode !== null) continue;
+    const keys = new Set([norm(m.canonical_id), norm(m.arena_model_name)]);
+    for (const k of keys) {
+      if (!k) continue;
+      const prev = index.get(k);
+      if (prev && prev !== m) {
+        warnings.push(
+          `WARN: normalised key "${k}" matches both "${prev.arena_model_name}" and "${m.arena_model_name}" — keeping the first`
+        );
+        continue;
+      }
+      index.set(k, m);
+    }
+  }
+  return index;
+}
+
+function makeResolver(index, aliases) {
+  return (key) => {
+    if (key == null || !String(key).trim()) return null;
+    const alias = aliases[key];
+    if (alias) {
+      const viaAlias = index.get(norm(alias));
+      if (viaAlias) return viaAlias;
+    }
+    return index.get(norm(key)) ?? null;
+  };
 }
 
 // Option fields (like `license`) come back from GET as the option's internal
@@ -464,15 +530,11 @@ function findCandidates(key, models) {
 // N is the number of items already on the vendor's page, not a constant: the
 // seed starts a page at three, a human may have grown it to four, and either
 // way the question is "are these the N best this vendor has".
-function buildSuggestions(vendorItems, items, models, warnings) {
+//
+// CMS keys and snapshot models are compared through the same resolver the
+// sync uses, never as raw strings: the CMS holds slugs, Arena display names.
+function buildSuggestions(vendorItems, items, models, resolveKey, warnings) {
   const suggestions = [];
-
-  // Rank comes from this cut rather than the CMS field, which is only as
-  // fresh as the last successful sync.
-  const rankByKey = new Map();
-  for (const m of models) {
-    if (m.arena_model_name) rankByKey.set(m.arena_model_name, m.arena_rank ?? null);
-  }
 
   for (const vendor of vendorItems) {
     const label = vendor.fieldData?.name;
@@ -497,13 +559,13 @@ function buildSuggestions(vendorItems, items, models, warnings) {
     // with no price is not something to put on a page, so it is not something
     // to suggest either.
     const top = pickVendorTop(models, spec, { limit: cms.length });
-    const topKeys = new Set(top.map((m) => m.arena_model_name));
-    const cmsKeys = new Set(
-      cms.map((it) => it.fieldData?.["arena-model-name"]).filter(Boolean)
+    const topSet = new Set(top);
+    const cmsModels = new Set(
+      cms.map((it) => resolveKey(it.fieldData?.["arena-model-name"])).filter(Boolean)
     );
 
     const add = top
-      .filter((m) => !cmsKeys.has(m.arena_model_name))
+      .filter((m) => !cmsModels.has(m))
       .map((m) => ({
         key: m.arena_model_name,
         rank: m.arena_rank ?? null,
@@ -514,13 +576,15 @@ function buildSuggestions(vendorItems, items, models, warnings) {
     // Everything on the page that the top-N does not contain, worst first.
     // An item whose key is gone from Arena ranks as unknown and therefore
     // sorts first, which is right: it is the most replaceable thing there.
+    //
+    // Rank comes from this cut rather than the CMS field, which is only as
+    // fresh as the last successful sync.
     const replaceCandidates = cms
-      .filter((it) => !topKeys.has(it.fieldData?.["arena-model-name"]))
-      .map((it) => {
+      .map((it) => ({ it, model: resolveKey(it.fieldData?.["arena-model-name"]) }))
+      .filter(({ model }) => !model || !topSet.has(model))
+      .map(({ it, model }) => {
         const key = it.fieldData?.["arena-model-name"] ?? null;
-        const rank = rankByKey.has(key)
-          ? rankByKey.get(key)
-          : (it.fieldData?.["arena-rank"] ?? null);
+        const rank = model ? (model.arena_rank ?? null) : (it.fieldData?.["arena-rank"] ?? null);
         return { name: it.fieldData?.name ?? it.id, key, rank };
       })
       .sort((a, b) => rankValue(b.rank) - rankValue(a.rank));
@@ -562,13 +626,14 @@ async function writeReport(path, report) {
 async function main() {
   console.log(DRY_RUN ? "mode: DRY RUN (no writes)" : "mode: LIVE (will patch CMS)");
 
+  const warnings = [];
+
   const snapshot = await readSnapshot();
-  const bySlug = new Map();
-  for (const m of snapshot.models) {
-    if (m.arena_model_name) bySlug.set(m.arena_model_name, m);
-  }
+  const aliases = await readAliases();
+  const index = buildIndex(snapshot.models, warnings);
+  const resolveKey = makeResolver(index, aliases);
   console.log(
-    `snapshot: ${snapshot.models.length} models, ${bySlug.size} keyed by arena_model_name`
+    `snapshot: ${snapshot.models.length} models, ${index.size} normalised keys (base variants), ${Object.keys(aliases).length} alias(es)`
   );
 
   const licenseOptions = await fetchLicenseOptions();
@@ -580,7 +645,6 @@ async function main() {
   const skipped = [];
   const missed = [];
   const matched = [];
-  const warnings = [];
 
   // The top-N check is the secondary job here. If the Models collection
   // cannot be read, warn and still sync every metric.
@@ -614,16 +678,11 @@ async function main() {
       continue;
     }
 
-    const model = bySlug.get(key);
+    // The index holds base variants only, so a match is always one.
+    const model = resolveKey(key);
     if (!model) {
       missed.push({ name, key, candidates: findCandidates(key, snapshot.models) });
       continue;
-    }
-
-    if (model.reasoning_mode !== null) {
-      warnings.push(
-        `WARN: "${name}" is bound to a non-base variant (reasoning_mode=${model.reasoning_mode}); site convention is base variants only`
-      );
     }
 
     // /items/live can only patch items that have been published at least
@@ -650,7 +709,7 @@ async function main() {
     for (const m of missed) console.log(`  - ${m.name}  [key: ${m.key}]`);
   }
 
-  const suggestions = buildSuggestions(vendorItems, items, snapshot.models, warnings);
+  const suggestions = buildSuggestions(vendorItems, items, snapshot.models, resolveKey, warnings);
 
   if (suggestions.length) {
     console.log(

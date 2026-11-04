@@ -12,6 +12,9 @@ on:
 
 permissions:
   contents: write
+  # The failure alert reads this workflow's previous run to tell a one-off
+  # Hugging Face 5xx from a second failure in a row.
+  actions: read
 
 concurrency:
   group: snapshot
@@ -65,6 +68,13 @@ jobs:
       # its output so the message answers "why" without opening Actions.
       # continue-on-error so an unreachable Telegram cannot add a second,
       # misleading failure on top of the real one.
+      #
+      # Exception: a Hugging Face 5xx (the dataset-server reindexing) usually
+      # clears by the next cron, so the first one stays silent. It alerts once
+      # it is the second failed run in a row, or once data/latest.json is more
+      # than 3 days old by generated_at — whichever comes first. Every other
+      # error alerts at once, as before. If either check cannot be answered
+      # (API down, unreadable file), it alerts: better noisy than blind.
       - name: Alert on failure
         if: failure()
         continue-on-error: true
@@ -72,12 +82,45 @@ jobs:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
         run: |
           [ -z "$TG_TOKEN" ] && exit 0
           step=$(cat failed-step.txt 2>/dev/null || true)
+
+          reason=""
+          # Only the fetch step talks to Hugging Face, and only its final
+          # FAILED line counts: retries that recovered also log "HTTP 5xx".
+          if [ "$step" = "Fetch and normalize" ] \
+             && grep -qE 'FAILED: arena: .*HTTP 5[0-9]{2}' step.log 2>/dev/null; then
+            # status=completed leaves out this run, which is still going; the
+            # concurrency group means nothing else of ours is in between.
+            prev=$(gh api \
+              "repos/${REPO}/actions/workflows/snapshot.yml/runs?status=completed&per_page=1" \
+              --jq '.workflow_runs[0].conclusion // "none"' 2>/dev/null || echo unknown)
+            age_days=$(node -e '
+              const g = Date.parse(require("./data/latest.json").generated_at);
+              if (!Number.isFinite(g)) process.exit(1);
+              console.log(((Date.now() - g) / 86400000).toFixed(1));
+            ' 2>/dev/null || echo unknown)
+            echo "HF 5xx: previous run=${prev}, latest.json age=${age_days}d"
+
+            if [ "$prev" = "failure" ]; then
+              reason="HF 5xx: 2nd failed run in a row"
+            elif [ "$age_days" = "unknown" ] || [ "$prev" = "unknown" ]; then
+              reason="HF 5xx: could not check previous run / data age (prev=${prev}, age=${age_days}d)"
+            elif awk -v a="$age_days" 'BEGIN { exit !(a > 3) }'; then
+              reason="HF 5xx: data/latest.json is ${age_days}d old"
+            else
+              echo "first HF 5xx and data is ${age_days}d old — not alerting"
+              exit 0
+            fi
+          fi
+
           {
             echo "llm-data snapshot FAILED"
             echo "step: ${step:-unknown}"
+            [ -n "$reason" ] && echo "$reason"
             if [ -s step.log ]; then
               echo "--- last 15 lines ---"
               # 1500 bytes keeps header + log + link well inside Telegram's

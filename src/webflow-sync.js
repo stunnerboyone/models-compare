@@ -253,16 +253,16 @@ async function fetchLicenseOptions() {
   return { nameToId, idToName };
 }
 
-async function fetchAllItems(collectionId = COLLECTION_ID) {
+// live: true lists the published versions (/items/live), i.e. what the site
+// actually serves, instead of the staged ones the sync diffs against.
+async function fetchAllItems(collectionId = COLLECTION_ID, { live = false } = {}) {
   const items = [];
   const limit = 100;
   let offset = 0;
+  const base = `/collections/${collectionId}/items${live ? "/live" : ""}`;
 
   for (;;) {
-    const page = await api(
-      "GET",
-      `/collections/${collectionId}/items?limit=${limit}&offset=${offset}`
-    );
+    const page = await api("GET", `${base}?limit=${limit}&offset=${offset}`);
     const batch = page.items ?? [];
     items.push(...batch);
 
@@ -374,6 +374,63 @@ function formatArenaDate(value) {
   if (monthIndex < 0 || monthIndex > 11 || dayNum < 1 || dayNum > 31) return null;
 
   return `${dayNum} ${MONTHS[monthIndex]} ${year}`;
+}
+
+// Inverse of formatArenaDate: "11 Sep 2026" -> UTC ms, or null. Only the
+// exact shape this script writes is accepted; a label a human typed by hand
+// is left out of the STALE count rather than guessed at.
+function parseArenaDateLabel(label) {
+  const m = /^(\d{1,2}) ([A-Z][a-z]{2}) (\d{4})$/.exec(String(label ?? "").trim());
+  if (!m) return null;
+  const monthIndex = MONTHS.indexOf(m[2]);
+  if (monthIndex === -1) return null;
+  return Date.UTC(Number(m[3]), monthIndex, Number(m[1]));
+}
+
+function parseIsoDay(value) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value ?? "").trim());
+  if (!m) return null;
+  return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
+const STALE_AFTER_DAYS = 7;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// What the site shows, grouped by label, plus the labels that trail the
+// snapshot by more than STALE_AFTER_DAYS. Deliberately blind to *why* a
+// label is old (a MISS, an item nobody published, a patch that silently
+// went nowhere), so it catches what the per-item bookkeeping does not.
+function checkStale(publishedAt, liveItems) {
+  const counts = new Map();
+  for (const item of liveItems) {
+    const label = item.fieldData?.["arena-date-label"];
+    if (!label || !String(label).trim()) continue;
+    counts.set(label, (counts.get(label) ?? 0) + 1);
+  }
+  const siteLabels = [...counts.entries()]
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+
+  const arenaDay = parseIsoDay(publishedAt);
+  if (arenaDay == null) return { siteLabels, stale: null };
+
+  const staleLabels = siteLabels
+    .map((l) => ({ ...l, ms: parseArenaDateLabel(l.label) }))
+    .filter((l) => l.ms != null && arenaDay - l.ms > STALE_AFTER_DAYS * DAY_MS)
+    .map(({ label, count, ms }) => ({
+      label,
+      count,
+      days_behind: Math.round((arenaDay - ms) / DAY_MS),
+    }));
+
+  const stale = staleLabels.length
+    ? {
+        threshold_days: STALE_AFTER_DAYS,
+        items: staleLabels.reduce((n, l) => n + l.count, 0),
+        labels: staleLabels,
+      }
+    : null;
+  return { siteLabels, stale };
 }
 
 function toIso(value) {
@@ -755,6 +812,27 @@ async function main() {
     updated += await patchGroup(draftGroup, `/collections/${COLLECTION_ID}/items`, "draft");
   }
 
+  // Read back after patching, from the live endpoint: the question is what
+  // visitors see now, not what the CMS has staged. If the live list cannot
+  // be read, fall back to the staged values and say so; a weaker check
+  // beats none.
+  let liveItems;
+  try {
+    liveItems = await fetchAllItems(COLLECTION_ID, { live: true });
+  } catch (err) {
+    console.log(`\nWARN: cannot read live items (${err.message}) — STALE check uses staged values`);
+    liveItems = items;
+  }
+  const { siteLabels, stale } = checkStale(snapshot.arena?.published_at, liveItems);
+  if (stale) {
+    console.log(
+      `\nSTALE: site date label more than ${STALE_AFTER_DAYS}d behind arena.published_at (${snapshot.arena?.published_at})`
+    );
+    for (const l of stale.labels) {
+      console.log(`  ${l.count} item(s) show ${l.label} (${l.days_behind}d behind)`);
+    }
+  }
+
   const updatedLabel = DRY_RUN ? `${toUpdate.length} (dry)` : String(updated);
   console.log(
     `\nsummary: matched=${matched.length} updated=${updatedLabel} unchanged=${unchanged} skipped=${skipped.length} missed=${missed.length}`
@@ -767,6 +845,14 @@ async function main() {
     await writeReport(REPORT_PATH, {
       generated_at: new Date().toISOString(),
       dry_run: DRY_RUN,
+      // Every CMS item, keyed or not: the denominator for "matched X of N".
+      cms_items: items.length,
+      arena_published_at: snapshot.arena?.published_at ?? null,
+      arena_date_label: arenaDateLabel,
+      // Live (published) labels, most common first.
+      site_date_labels: siteLabels,
+      // null when every label is within STALE_AFTER_DAYS of the snapshot.
+      stale,
       matched: matched.length,
       updated,
       unchanged,

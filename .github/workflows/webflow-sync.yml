@@ -31,9 +31,12 @@ jobs:
 
       # The MISS and SUGGEST reminders are deduped across runs, so the notifier
       # has to know what it reported last time. Cache entries are immutable, so
-      # each run saves under its own key and restores the newest one by prefix.
-      # A miss on the restore (first run, or a 7-day eviction) just means one
-      # extra reminder, never a missing one.
+      # each run saves under its own key (miss-state-<hash of the missed set>-
+      # <run>) and restores the newest one by prefix. The hash alone cannot be
+      # the key: the same set on the next run would collide with an entry that
+      # can never be overwritten, and the SUGGEST half of the state would be
+      # stuck. A miss on the restore (first run, or a 7-day eviction) just
+      # means one extra full list, never a missing one.
       - name: Restore reminder state
         uses: actions/cache/restore@v4
         with:
@@ -71,16 +74,26 @@ jobs:
       # stdout: the counts and the per-item detail come from the same source
       # the script actually wrote, so a format change in the log cannot turn
       # the alert into "MISS: 1 item(s)" with no clue which item.
+      #
+      # On top of that, two checks that always send:
+      #   CRITICAL — nothing matched, or at least half the CMS items missed.
+      #   STALE    — the site's arena-date-label trails latest.json's
+      #              published_at by more than 7 days, whatever the reason.
+      # An unchanged MISS set gets one short line on the morning run only.
       - name: Build notification
         id: notify
         if: success()
         env:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          # The cron line that fired, empty on workflow_dispatch. Tells the
+          # morning run apart from the 09:45 retry.
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
         run: |
           echo "Build notification" > failed-step.txt
           set -o pipefail
           node --input-type=module - <<'NODE' 2>&1 | tee step.log
-          import { readFileSync, writeFileSync } from "node:fs";
+          import { readFileSync, writeFileSync, appendFileSync } from "node:fs";
+          import { createHash } from "node:crypto";
 
           const REPORT = "sync-report.json";
           const STATE = ".miss-state.json";
@@ -90,10 +103,14 @@ jobs:
           const LIMIT = 4000;
           const LIST_CAP = 10;
           const CANDIDATES_SHOWN = 3;
-          // A MISS is a standing condition, not an event: it stays missed every
-          // day until a human edits the CMS. Repeat the same set at most this
-          // often so the daily sync does not train everyone to ignore it.
+          // SUGGEST is a standing condition: the same set every day until a
+          // human edits the CMS. Repeat the same set at most this often.
           const REMIND_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
+          // The morning cron is the one run a day allowed to say "MISS
+          // unchanged"; the 09:45 retry and manual runs stay quiet about it.
+          // Must match the first cron line under `on.schedule` above.
+          const MORNING_CRON = "45 6 * * *";
+          const isMorning = process.env.EVENT_SCHEDULE === MORNING_CRON;
 
           const report = JSON.parse(readFileSync(REPORT, "utf8"));
           const missedItems = report.missed_items ?? [];
@@ -115,10 +132,33 @@ jobs:
             // way: treat the current findings as new and report them.
           }
 
-          // Both MISS and SUGGEST are standing conditions with the same shape:
-          // the same set of keys, day after day, until a human edits the CMS.
-          // Each keeps its own clock, so a new suggestion is not silenced by a
-          // MISS that was reported yesterday.
+          const now = new Date().toISOString();
+
+          // MISS: the full list goes out only when the *set* changes, which
+          // the hash of the sorted keys answers in one comparison. A state
+          // file from before the hash existed still has the keys, so hash
+          // those rather than re-announcing a set that was already sent.
+          const hashKeys = (keys) =>
+            createHash("sha256").update(keys.join("\n")).digest("hex").slice(0, 16);
+          const missHash = missedKeys.length > 0 ? hashKeys(missedKeys) : null;
+          const savedMissHash =
+            state.miss_hash ??
+            (Array.isArray(state.keys) && state.keys.length > 0
+              ? hashKeys([...state.keys].sort())
+              : null);
+          const missChanged = missHash !== null && missHash !== savedMissHash;
+          // "since" is when this exact set first appeared, not when it was
+          // last mentioned. Older state files only know last_notified, which
+          // for them was the same moment.
+          const missSince =
+            missHash === null
+              ? null
+              : missChanged
+                ? now
+                : (state.miss_since ?? state.last_notified ?? now);
+          const missUnchangedLine = missHash !== null && !missChanged && isMorning;
+
+          // SUGGEST keeps its own 3-day reminder clock, independent of MISS.
           function decide(currentKeys, savedKeys, savedAt) {
             const sinceLast = Number.isFinite(Date.parse(savedAt ?? ""))
               ? Date.now() - Date.parse(savedAt)
@@ -132,13 +172,38 @@ jobs:
               suppress: currentKeys.length > 0 && sameSet && sinceLast < REMIND_AFTER_MS,
             };
           }
-
-          const miss = decide(missedKeys, state.keys, state.last_notified);
           const suggest = decide(suggestKeys, state.suggest_keys, state.suggest_notified);
 
-          const lines = [
-            `llm-data webflow-sync: updated ${report.updated} of ${report.matched}`,
-          ];
+          // Denominator is every CMS item. matched was the old denominator,
+          // which is how a fully broken sync read as a harmless "0 of 0".
+          // Older reports without cms_items fall back to the old behaviour.
+          const total = report.cms_items ?? report.matched;
+          const critical =
+            report.matched === 0 || (total > 0 && report.missed * 2 >= total);
+
+          const siteLabels = report.site_date_labels ?? [];
+          const siteLabelText =
+            siteLabels.length === 0
+              ? "—"
+              : siteLabels.length === 1
+                ? siteLabels[0].label
+                : siteLabels.map((l) => `${l.label} (${l.count})`).join(", ");
+
+          // Header lines survive truncation, so everything that answers "is
+          // the site broken" goes here, ahead of the per-item detail.
+          const head = [];
+          if (critical) {
+            head.push(`🚨 CRITICAL: сайт не оновлюється — matched ${report.matched} of ${total}`);
+            head.push(
+              `Arena published_at: ${report.arena_published_at ?? "—"}, на сайті: ${siteLabelText}`
+            );
+          }
+          head.push(`llm-data webflow-sync: updated ${report.updated} of ${total}`);
+          for (const l of report.stale?.labels ?? []) {
+            head.push(`⚠️ STALE: ${l.count} items show ${l.label}`);
+          }
+
+          const lines = [];
 
           for (const item of updatedItems.slice(0, LIST_CAP)) {
             lines.push(`• ${item.name}: ${(item.fields ?? []).join(", ")}`);
@@ -147,7 +212,7 @@ jobs:
             lines.push(`+${updatedItems.length - LIST_CAP} more`);
           }
 
-          if (missedItems.length > 0 && !miss.suppress) {
+          if (missChanged) {
             lines.push("MISS (CMS item no longer in Arena):");
             for (const item of missedItems.slice(0, LIST_CAP)) {
               lines.push(`• ${item.name} [${item.key}]`);
@@ -161,6 +226,8 @@ jobs:
             if (missedItems.length > LIST_CAP) {
               lines.push(`+${missedItems.length - LIST_CAP} more`);
             }
+          } else if (missUnchangedLine) {
+            lines.push(`MISS unchanged: ${missedKeys.length} items (since ${missSince.slice(0, 10)})`);
           }
 
           // Same wording as the script's SUGGEST block, so the alert and the
@@ -183,77 +250,69 @@ jobs:
             lines.push("  → add the model version in CMS, or swap it for the weakest");
           }
 
-          lines.push(process.env.RUN_URL ?? "");
+          const runUrl = process.env.RUN_URL ?? "";
 
-          // Drop detail lines, never the first line or the run link — the link
-          // is what a truncated message is read with.
-          function clamp(all) {
-            const text = all.join("\n");
+          // Drop detail lines, never the header block or the run link — the
+          // link is what a truncated message is read with.
+          function clamp(headLines, body, link) {
+            const text = [...headLines, ...body, link].join("\n");
             if (text.length <= LIMIT) return text;
-            const head = all[0];
-            const tail = `… truncated, see the run log\n${all[all.length - 1]}`;
+            const tail = `… truncated, see the run log\n${link}`;
             const kept = [];
-            let size = head.length + 1 + tail.length;
-            for (const line of all.slice(1, -1)) {
+            let size = headLines.join("\n").length + 1 + tail.length;
+            for (const line of body) {
               if (size + line.length + 1 > LIMIT) break;
               kept.push(line);
               size += line.length + 1;
             }
-            return [head, ...kept, tail].join("\n");
+            return [...headLines, ...kept, tail].join("\n");
           }
 
-          // Send when the sync changed something, a CMS item has fallen out of
-          // Arena, or a vendor's top-N has moved on without the CMS. A run
-          // whose only finding is being suppressed as a repeat has nothing
-          // left to say, so it stays silent rather than sending a bare
-          // "updated 0 of N".
-          const gateOpen =
-            report.updated > 0 || report.missed > 0 || suggestions.length > 0;
-          const hasSomethingToSay =
-            report.updated > 0 ||
-            (missedItems.length > 0 && !miss.suppress) ||
-            (suggestions.length > 0 && !suggest.suppress);
+          // CRITICAL and STALE always go out: they describe the site, not
+          // a finding someone has already been told about. Everything else
+          // goes out only when it is news.
+          const reasons = [];
+          if (critical) reasons.push("critical");
+          if (report.stale) reasons.push("stale");
+          if (report.updated > 0) reasons.push("updated");
+          if (missChanged) reasons.push("miss changed");
+          if (missUnchangedLine) reasons.push("miss unchanged (morning)");
+          if (suggestions.length > 0 && !suggest.suppress) reasons.push("suggest");
 
           const days = (ms) => (ms / 86400000).toFixed(1);
 
-          if (gateOpen && hasSomethingToSay) {
-            writeFileSync(OUT, clamp(lines));
-            console.log("notification queued");
-          } else if (miss.suppress || suggest.suppress) {
+          if (reasons.length > 0) {
+            writeFileSync(OUT, clamp(head, lines, runUrl));
+            console.log(`notification queued: ${reasons.join(", ")}`);
+          } else {
             const held = [];
-            if (miss.suppress) {
-              held.push(`${missedKeys.length} missed key(s), last sent ${days(miss.sinceLast)}d ago`);
+            if (missHash !== null) {
+              held.push(`${missedKeys.length} missed key(s) unchanged since ${missSince}, not the morning run`);
             }
             if (suggest.suppress) {
               held.push(
                 `${suggestKeys.length} suggestion(s), last sent ${days(suggest.sinceLast)}d ago`
               );
             }
-            console.log(`unchanged repeat — silent: ${held.join("; ")}`);
-          } else {
-            console.log("nothing changed, nothing missed, nothing to suggest — silent");
+            console.log(
+              held.length
+                ? `unchanged repeat — silent: ${held.join("; ")}`
+                : "nothing changed, nothing missed, nothing to suggest — silent"
+            );
           }
 
-          // Only a finding that was actually reported moves its clock.
-          // Suppressed runs keep the old timestamp, which is what makes the
-          // reminder land every 3 days instead of never; a set that empties
-          // resets, so the same finding coming back is reported at once.
-          const now = new Date().toISOString();
+          // An emptied set resets, so the same set coming back later is
+          // reported in full at once.
           const nextState = {
-            keys: Array.isArray(state.keys) ? state.keys : [],
-            last_notified: state.last_notified ?? null,
+            miss_hash: missHash,
+            keys: missedKeys,
+            miss_since: missSince,
+            last_notified: missChanged ? now : missHash === null ? null : (state.last_notified ?? null),
             suggest_keys: Array.isArray(state.suggest_keys) ? state.suggest_keys : [],
             suggest_notified: state.suggest_notified ?? null,
           };
 
-          if (missedKeys.length === 0) {
-            nextState.keys = [];
-            nextState.last_notified = null;
-          } else if (!miss.suppress) {
-            nextState.keys = missedKeys;
-            nextState.last_notified = now;
-          }
-
+          // Only a suggestion set that was actually reported moves its clock.
           if (suggestKeys.length === 0) {
             nextState.suggest_keys = [];
             nextState.suggest_notified = null;
@@ -263,6 +322,12 @@ jobs:
           }
 
           writeFileSync(STATE, JSON.stringify(nextState, null, 2));
+
+          // The cache key carries the hash, so the Actions cache list shows
+          // which MISS set each saved state belongs to.
+          if (process.env.GITHUB_OUTPUT) {
+            appendFileSync(process.env.GITHUB_OUTPUT, `miss_hash=${missHash ?? "none"}\n`);
+          }
           NODE
 
       # Telegram being down must not fail the job: the sync itself already
@@ -289,7 +354,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: .miss-state.json
-          key: miss-state-${{ github.run_id }}-${{ github.run_attempt }}
+          key: miss-state-${{ steps.notify.outputs.miss_hash }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       # Only fires when the job failed — a silent broken cron is the whole
       # thing we are trying to avoid. Carries the failing step and the tail of

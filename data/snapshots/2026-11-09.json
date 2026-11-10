@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-10T14:48:29.893Z",
+  "generated_at": "2026-11-10T17:04:08.009Z",
   "arena": {
     "published_at": "2026-11-09",
     "source": "https://arena.ai/leaderboard",
@@ -26,13 +26,13 @@
       "arena_votes": 4282,
       "canonical_id": "gemini-4-carbon",
       "reasoning_mode": "high",
-      "openrouter_id": null,
-      "released_at": null,
-      "context_length": null,
-      "price_input_per_mtok": null,
-      "price_output_per_mtok": null,
-      "price_match": null,
-      "price_source": null
+      "openrouter_id": "google/gemini-4-carbon",
+      "released_at": "2026-11-10",
+      "context_length": 1048576,
+      "price_input_per_mtok": 2,
+      "price_output_per_mtok": 10,
+      "price_match": "strict",
+      "price_source": "openrouter"
     },
     {
       "arena_model_name": "Gemini 4 Argon (High)",
@@ -2147,8 +2147,8 @@
       "openrouter_id": "tencent/hy3",
       "released_at": "2026-07-06",
       "context_length": 262144,
-      "price_input_per_mtok": 0.132,
-      "price_output_per_mtok": 0.528,
+      "price_input_per_mtok": 0.0825,
+      "price_output_per_mtok": 0.33,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11346,28 +11346,21 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-11-10T14:48:29.893Z",
+    "fetched_at": "2026-11-10T17:04:08.009Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
     },
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
-    "matched": 183,
+    "matched": 184,
     "official": 130,
-    "matched_strict": 140,
+    "matched_strict": 141,
     "matched_loose": 43,
     "blocked_ambiguous": 6,
-    "unmatched": 238,
-    "coverage_top50": 42,
+    "unmatched": 237,
+    "coverage_top50": 43,
     "unmatched_models": [
-      {
-        "arena": "Gemini 4 Carbon (High)",
-        "canonical": "gemini-4-carbon",
-        "loose": "gemini-4-carbon",
-        "org": "google",
-        "reason": "not on openrouter"
-      },
       {
         "arena": "Muse Spark",
         "canonical": "muse-spark",

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-10T17:04:08.009Z",
+  "generated_at": "2026-11-12T17:38:30.108Z",
   "arena": {
     "published_at": "2026-11-09",
     "source": "https://arena.ai/leaderboard",
@@ -32,7 +32,10 @@
       "price_input_per_mtok": 2,
       "price_output_per_mtok": 10,
       "price_match": "strict",
-      "price_source": "openrouter"
+      "price_source": "official",
+      "price_provider": "google",
+      "modelsdev_id": "gemini-4-carbon",
+      "knowledge_cutoff": "2026-03"
     },
     {
       "arena_model_name": "Gemini 4 Argon (High)",
@@ -2280,8 +2283,8 @@
       "openrouter_id": "moonshotai/kimi-k2.5",
       "released_at": "2026-01-27",
       "context_length": 262144,
-      "price_input_per_mtok": 0.532,
-      "price_output_per_mtok": 3.325,
+      "price_input_per_mtok": 0.5,
+      "price_output_per_mtok": 2.5,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -2830,8 +2833,8 @@
       "openrouter_id": "google/gemma-4-26b-a4b-it",
       "released_at": "2026-04-03",
       "context_length": 262144,
-      "price_input_per_mtok": 0.08,
-      "price_output_per_mtok": 0.1,
+      "price_input_per_mtok": 0.09,
+      "price_output_per_mtok": 0.28,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -5652,7 +5655,7 @@
       "released_at": "2025-03-12",
       "context_length": 131072,
       "price_input_per_mtok": 0.08,
-      "price_output_per_mtok": 0.45,
+      "price_output_per_mtok": 0.35,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -5835,7 +5838,7 @@
       "reasoning_mode": null,
       "openrouter_id": "nvidia/nemotron-3-super-120b-a12b",
       "released_at": "2026-03-11",
-      "context_length": 1048576,
+      "context_length": 262144,
       "price_input_per_mtok": 0.075,
       "price_output_per_mtok": 0.4,
       "price_match": "loose",
@@ -8095,7 +8098,7 @@
       "released_at": "2026-08-31",
       "context_length": 131072,
       "price_input_per_mtok": 0.06,
-      "price_output_per_mtok": 0.25,
+      "price_output_per_mtok": 0.15,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11346,7 +11349,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-11-10T17:04:08.009Z",
+    "fetched_at": "2026-11-12T17:38:30.108Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
@@ -11354,7 +11357,7 @@
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
     "matched": 184,
-    "official": 130,
+    "official": 131,
     "matched_strict": 141,
     "matched_loose": 43,
     "blocked_ambiguous": 6,

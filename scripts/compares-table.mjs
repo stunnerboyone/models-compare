@@ -24,6 +24,9 @@ const finder = (fields, label) => (name) => {
 
 const [fC, fM, fV] = await Promise.all([schema(C_COMPARES), schema(C_MODELS), schema(C_VERSIONS)]);
 const [iC, iM, iV] = await Promise.all([items(C_COMPARES), items(C_MODELS), items(C_VERSIONS)]);
+// Live can differ from staged (an item published from the CMS UI), so an item
+// is only skipped when both already hold exactly the values we would write.
+const liveById = new Map((await api('/collections/' + C_COMPARES + '/items/live?limit=100')).items.map((x) => [x.id, x]));
 const c = finder(fC, 'Compares'), v = finder(fV, 'Model Versions');
 
 const S = {
@@ -78,10 +81,13 @@ for (const item of iC) {
     }
   }
   console.log(d.name.padEnd(20), '|', `${A.model} ${A.score} ${A.rank} ${A['input price']}`, '||', `${B.model} ${B.score} ${B.rank} ${B['input price']}`, '|', fieldData[c('Data date').slug]);
+  const same = (src) => Object.entries(fieldData).every(([k, val]) => (src?.[k] ?? '') === val);
+  if (same(d) && same(liveById.get(item.id)?.fieldData)) continue;
   updates.push({ id: item.id, fieldData });
 }
 
 console.log('\nitems to update:', updates.length, 'of', iC.length);
+if (!updates.length) { console.log('nothing to update'); process.exit(0); }
 if (!APPLY) { console.log('DRY RUN, nothing written. Re-run with --apply.'); process.exit(0); }
 await api('/collections/' + C_COMPARES + '/items', { method: 'PATCH', body: JSON.stringify({ items: updates }) });
 console.log('patched staged');

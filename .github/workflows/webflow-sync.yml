@@ -59,6 +59,18 @@ jobs:
           node --env-file-if-exists=.env src/webflow-sync.js \
             --report sync-report.json 2>&1 | tee step.log
 
+      # /compare/{pair} pages carry a static, server-rendered comparison table
+      # (SEO) built from plain text fields on each Compares item. Refresh them
+      # from Model Versions right after the sync, so the table never trails
+      # the widget. A failure here fails the job and fires the alert below.
+      - name: Refresh compare tables
+        env:
+          WEBFLOW_TOKEN: ${{ secrets.WEBFLOW_TOKEN }}
+        run: |
+          echo "Refresh compare tables" > failed-step.txt
+          set -o pipefail
+          node --env-file-if-exists=.env scripts/compares-table.mjs --apply 2>&1 | tee step.log
+
       # Stay quiet on the "nothing to update" runs — that's most of them.
       # Ping only when the sync actually changed something (updated > 0) or
       # when a CMS item's arena-model-name has disappeared from the snapshot

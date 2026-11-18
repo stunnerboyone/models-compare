@@ -7,3 +7,5 @@ probe.js
 .env
 sync-report.json
 .miss-state.json
+
+tmp/

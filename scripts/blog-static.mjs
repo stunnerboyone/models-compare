@@ -176,15 +176,26 @@ function convert(html, templates, warn) {
     let j = i;
     while (j < blocks.length && !END.test(text(blocks[j].html))) j++;
     if (j === blocks.length) { warn('unclosed ' + type + ' block, left as is'); out.push(b.html); continue; }
-    const lines = blocks.slice(i, j + 1).flatMap(linesOf)
-      .filter((l) => { const t = text(l); return !START.test(t) && !END.test(t); });
+    // Text sharing a paragraph with a marker (Shift+Enter) is not part of the block:
+    // what precedes START stays a paragraph above it, what follows END a paragraph below.
+    const all = blocks.slice(i, j + 1).flatMap(linesOf);
+    const first = all.findIndex((l) => START.test(text(l)));
+    let last = -1;
+    all.forEach((l, k) => { if (k > first && END.test(text(l))) last = k; });
+    if (last === -1) last = all.length;
+    const before = [], after = [];
+    all.slice(0, first).forEach((l) => { if (text(l)) before.push(l); });
+    all.slice(last + 1).forEach((l) => { if (text(l)) after.push(l); });
+    const lines = all.slice(first + 1, last);
     let built = null;
     if (type === 'TABLE') built = buildTable(lines);
     else if (type === 'CODE') built = buildCode(lines);
     else if (type === 'BANNER') built = buildBanner(lines, templates, warn);
     else warn('unknown block type ' + type + ', left as is');
     if (!built) { if (type in stats) warn('empty ' + type + ' block, left as is'); out.push(b.html); continue; }
+    if (before.length) out.push('<p>' + before.join('<br>') + '</p>');
     out.push('<div data-rt-embed-type="true">' + built + '</div>');
+    if (after.length) out.push('<p>' + after.join('<br>') + '</p>');
     stats[type]++;
     i = j;
   }

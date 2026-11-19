@@ -2,8 +2,9 @@
 // static HTML stored in the CMS, so tables, code and banners are in the page source
 // instead of being built in the browser.
 // Dry run by default: writes tmp/blog-static/<slug>.html and changes nothing.
-//   --apply         write to staged items
-//   --live          with --apply: also write to the published (live) items
+//   --apply         write the result back to the CMS
+//   --live          also process the published (live) version of each article
+//   --report <file> write a JSON summary of what was converted
 //   --only <slug>   limit to one article
 //   --dump <file>   read articles from a JSON dump instead of the API (dry run only)
 //   --templates <file>  read banner templates from a saved /sandbox page
@@ -19,6 +20,7 @@ const LIVE = process.argv.includes('--live');
 const ONLY = arg('--only');
 const DUMP = arg('--dump');
 const TEMPLATES = arg('--templates');
+const REPORT = arg('--report');
 
 const START = /={2,}>\s*START\s+([A-Z0-9_-]+)\s*<={2,}/i;
 const END = /={2,}>\s*END\s+([A-Z0-9_-]+)\s*<={2,}/i;
@@ -210,39 +212,57 @@ const api = async (path, opts = {}) => {
   return body;
 };
 
-if (DUMP && APPLY) { console.error('--dump is for dry runs only'); process.exit(1); }
-if (LIVE && !APPLY) { console.error('--live needs --apply'); process.exit(1); }
+if (DUMP && (APPLY || LIVE)) { console.error('--dump is for dry runs of staged content only'); process.exit(1); }
 if (!DUMP && !TOKEN) { console.error('WEBFLOW_TOKEN missing'); process.exit(1); }
 
 const page = TEMPLATES ? readFileSync(TEMPLATES, 'utf8') : await (await fetch(SITE + '/sandbox?nc=' + Date.now())).text();
 const templates = loadTemplates(page);
 console.log('banner templates:', Object.keys(templates).join(', ') || 'NONE');
 
-const items = DUMP
+mkdirSync('tmp/blog-static', { recursive: true });
+const report = { staged: [], live: [], warnings: [] };
+
+// Staged and live are converted separately, each from its own content, so an editor's
+// unpublished changes are never pushed to the site by this script.
+function run(label, items) {
+  const updates = [];
+  for (const item of items) {
+    const slug = item.fieldData.slug;
+    if (ONLY && slug !== ONLY) continue;
+    const src = item.fieldData[FIELD] || '';
+    const warnings = [];
+    const { html, stats } = convert(src, templates, (w) => warnings.push(w));
+    const left = (html.match(/(?:START|END)(?:\s|&nbsp;)+(?:TABLE|CODE|BANNER)/g) || []).length;
+    if (left) warnings.push(left + ' marker(s) left');
+    console.log(label.padEnd(6), (html === src ? 'same   ' : 'convert'), slug, '| tables', stats.TABLE, 'code', stats.CODE,
+      'banners', stats.BANNER, warnings.length ? '| WARN: ' + warnings.join('; ') : '');
+    warnings.forEach((w) => report.warnings.push(label + ' ' + slug + ': ' + w));
+    if (label === 'staged') writeFileSync('tmp/blog-static/' + slug + '.html', html);
+    if (html !== src) { updates.push({ id: item.id, fieldData: { [FIELD]: html } }); report[label].push(slug); }
+  }
+  return updates;
+}
+
+const stagedItems = DUMP
   ? JSON.parse(readFileSync(DUMP, 'utf8')).map((x) => ({ id: x.id, fieldData: { slug: x.slug, [FIELD]: x.article } }))
   : (await api('/collections/' + C_BLOGS + '/items?limit=100')).items;
+const liveItems = LIVE ? (await api('/collections/' + C_BLOGS + '/items/live?limit=100')).items : [];
 
-mkdirSync('tmp/blog-static', { recursive: true });
-const updates = [];
-for (const item of items) {
-  const slug = item.fieldData.slug;
-  if (ONLY && slug !== ONLY) continue;
-  const src = item.fieldData[FIELD] || '';
-  const warnings = [];
-  const { html, stats } = convert(src, templates, (w) => warnings.push(w));
-  const left = (html.match(/(?:START|END)(?:\s|&nbsp;)+(?:TABLE|CODE|BANNER)/g) || []).length;
-  console.log((html === src ? 'same   ' : 'convert'), slug, '| tables', stats.TABLE, 'code', stats.CODE, 'banners', stats.BANNER,
-    left ? '| MARKERS LEFT: ' + left : '', warnings.length ? '| WARN: ' + warnings.join('; ') : '');
-  writeFileSync('tmp/blog-static/' + slug + '.html', html);
-  if (html !== src) updates.push({ id: item.id, fieldData: { [FIELD]: html } });
-}
+const stagedUpdates = run('staged', stagedItems);
+const liveUpdates = run('live', liveItems);
+console.log('\nto update: staged', stagedUpdates.length, LIVE ? '| live ' + liveUpdates.length : '');
 
-console.log('\narticles to update:', updates.length);
-if (!APPLY) { console.log('DRY RUN, nothing written. Converted HTML is in tmp/blog-static/.'); process.exit(0); }
-if (!updates.length) process.exit(0);
-await api('/collections/' + C_BLOGS + '/items', { method: 'PATCH', body: JSON.stringify({ items: updates }) });
-console.log('patched staged:', updates.length);
-if (LIVE) {
-  const res = await api('/collections/' + C_BLOGS + '/items/live', { method: 'PATCH', body: JSON.stringify({ items: updates }) });
-  console.log('patched live:', (res.items || []).length);
+if (!APPLY) {
+  console.log('DRY RUN, nothing written. Converted HTML is in tmp/blog-static/.');
+} else {
+  if (stagedUpdates.length) {
+    await api('/collections/' + C_BLOGS + '/items', { method: 'PATCH', body: JSON.stringify({ items: stagedUpdates }) });
+    console.log('patched staged:', stagedUpdates.length);
+  }
+  if (liveUpdates.length) {
+    const res = await api('/collections/' + C_BLOGS + '/items/live', { method: 'PATCH', body: JSON.stringify({ items: liveUpdates }) });
+    console.log('patched live:', (res.items || []).length);
+  }
+  if (!stagedUpdates.length && !liveUpdates.length) console.log('nothing to update');
 }
+if (REPORT) writeFileSync(REPORT, JSON.stringify({ applied: APPLY, ...report }, null, 2));

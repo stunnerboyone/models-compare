@@ -1,0 +1,91 @@
+name: blog-static
+
+on:
+  schedule:
+    # Editors publish articles with text markers (==> START TABLE <== and so on).
+    # This turns them into static HTML in the CMS, so a new article is at most
+    # an hour away from having its tables, code and banners in the page source.
+    - cron: "23 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: blog-static
+  cancel-in-progress: false
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Convert article markers
+        env:
+          WEBFLOW_TOKEN: ${{ secrets.WEBFLOW_TOKEN }}
+        # A run with no markers anywhere writes nothing. tee keeps the log for
+        # the failure alert; pipefail keeps node's exit code.
+        run: |
+          set -o pipefail
+          node scripts/blog-static.mjs --apply --live --report blog-static-report.json 2>&1 | tee step.log
+
+      # Quiet unless something was converted.
+      - name: Notify on change
+        if: success()
+        continue-on-error: true
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          [ -z "$TG_TOKEN" ] && exit 0
+          node --input-type=module - <<'NODE'
+          import { readFileSync, writeFileSync } from "node:fs";
+          const r = JSON.parse(readFileSync("blog-static-report.json", "utf8"));
+          const slugs = [...new Set([...r.live, ...r.staged])];
+          // A block that cannot be converted stays that way until someone edits the
+          // article, so on its own it is reported once a day, not every hour.
+          const daily = new Date().getUTCHours() === 7;
+          if (!slugs.length && !(r.warnings.length && daily)) process.exit(0);
+          const lines = [`llm-data blog-static: converted ${slugs.length} article(s)`];
+          for (const s of slugs.slice(0, 10)) {
+            const where = [r.live.includes(s) && "live", r.staged.includes(s) && "staged"].filter(Boolean).join(" + ");
+            lines.push(`• ${s} (${where})`);
+          }
+          if (slugs.length > 10) lines.push(`+${slugs.length - 10} more`);
+          for (const w of r.warnings.slice(0, 10)) lines.push(`⚠️ ${w}`);
+          lines.push(process.env.RUN_URL ?? "");
+          writeFileSync("tg-message.txt", lines.join("\n").slice(0, 4000));
+          NODE
+          [ -f tg-message.txt ] || exit 0
+          curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            -d chat_id="${TG_CHAT}" \
+            --data-urlencode "text@tg-message.txt" >/dev/null || true
+
+      - name: Alert on failure
+        if: failure()
+        continue-on-error: true
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          [ -z "$TG_TOKEN" ] && exit 0
+          {
+            echo "llm-data blog-static FAILED"
+            if [ -s step.log ]; then
+              echo "--- last 15 lines ---"
+              tail -n 15 step.log | tail -c 1500 | iconv -f utf-8 -t utf-8 -c
+            else
+              echo "(no output captured)"
+            fi
+            echo "${RUN_URL}"
+          } > tg-alert.txt
+          curl -s -X POST "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            -d chat_id="${TG_CHAT}" \
+            --data-urlencode "text@tg-alert.txt" >/dev/null || true

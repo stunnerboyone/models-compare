@@ -215,7 +215,13 @@ const api = async (path, opts = {}) => {
 if (DUMP && (APPLY || LIVE)) { console.error('--dump is for dry runs of staged content only'); process.exit(1); }
 if (!DUMP && !TOKEN) { console.error('WEBFLOW_TOKEN missing'); process.exit(1); }
 
-const page = TEMPLATES ? readFileSync(TEMPLATES, 'utf8') : await (await fetch(SITE + '/sandbox?nc=' + Date.now())).text();
+let page;
+if (TEMPLATES) page = readFileSync(TEMPLATES, 'utf8');
+else {
+  const r = await fetch(SITE + '/sandbox?nc=' + Date.now());
+  if (!r.ok) throw new Error('GET /sandbox: HTTP ' + r.status);
+  page = await r.text();
+}
 const templates = loadTemplates(page);
 console.log('banner templates:', Object.keys(templates).join(', ') || 'NONE');
 
@@ -231,7 +237,10 @@ function run(label, items) {
     if (ONLY && slug !== ONLY) continue;
     const src = item.fieldData[FIELD] || '';
     const warnings = [];
-    const { html, stats } = convert(src, templates, (w) => warnings.push(w));
+    let html = src, stats = { TABLE: 0, CODE: 0, BANNER: 0 };
+    // One article that cannot be parsed must not stop the others: it is left as is and reported.
+    try { ({ html, stats } = convert(src, templates, (w) => warnings.push(w))); }
+    catch (e) { html = src; warnings.push('skipped, ' + e.message); }
     const left = (html.match(/(?:START|END)(?:\s|&nbsp;)+(?:TABLE|CODE|BANNER)/g) || []).length;
     if (left) warnings.push(left + ' marker(s) left');
     console.log(label.padEnd(6), (html === src ? 'same   ' : 'convert'), slug, '| tables', stats.TABLE, 'code', stats.CODE,
@@ -243,10 +252,28 @@ function run(label, items) {
   return updates;
 }
 
+const PAGE = 100;
+async function listAll(path) {
+  const all = [];
+  for (let offset = 0; ; offset += PAGE) {
+    const batch = (await api(path + '?limit=' + PAGE + '&offset=' + offset)).items || [];
+    all.push(...batch);
+    if (batch.length < PAGE) return all;
+  }
+}
+async function patchAll(path, updates) {
+  let n = 0;
+  for (let i = 0; i < updates.length; i += PAGE) {
+    const res = await api(path, { method: 'PATCH', body: JSON.stringify({ items: updates.slice(i, i + PAGE) }) });
+    n += (res.items || []).length;
+  }
+  return n;
+}
+
 const stagedItems = DUMP
   ? JSON.parse(readFileSync(DUMP, 'utf8')).map((x) => ({ id: x.id, fieldData: { slug: x.slug, [FIELD]: x.article } }))
-  : (await api('/collections/' + C_BLOGS + '/items?limit=100')).items;
-const liveItems = LIVE ? (await api('/collections/' + C_BLOGS + '/items/live?limit=100')).items : [];
+  : await listAll('/collections/' + C_BLOGS + '/items');
+const liveItems = LIVE ? await listAll('/collections/' + C_BLOGS + '/items/live') : [];
 
 const stagedUpdates = run('staged', stagedItems);
 const liveUpdates = run('live', liveItems);
@@ -256,12 +283,10 @@ if (!APPLY) {
   console.log('DRY RUN, nothing written. Converted HTML is in tmp/blog-static/.');
 } else {
   if (stagedUpdates.length) {
-    await api('/collections/' + C_BLOGS + '/items', { method: 'PATCH', body: JSON.stringify({ items: stagedUpdates }) });
-    console.log('patched staged:', stagedUpdates.length);
+    console.log('patched staged:', await patchAll('/collections/' + C_BLOGS + '/items', stagedUpdates));
   }
   if (liveUpdates.length) {
-    const res = await api('/collections/' + C_BLOGS + '/items/live', { method: 'PATCH', body: JSON.stringify({ items: liveUpdates }) });
-    console.log('patched live:', (res.items || []).length);
+    console.log('patched live:', await patchAll('/collections/' + C_BLOGS + '/items/live', liveUpdates));
   }
   if (!stagedUpdates.length && !liveUpdates.length) console.log('nothing to update');
 }

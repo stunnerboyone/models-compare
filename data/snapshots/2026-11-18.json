@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-19T15:40:40.844Z",
+  "generated_at": "2026-11-19T18:23:10.382Z",
   "arena": {
     "published_at": "2026-11-18",
     "source": "https://arena.ai/leaderboard",
@@ -2208,8 +2208,8 @@
       "openrouter_id": "tencent/hy3",
       "released_at": "2026-07-06",
       "context_length": 262144,
-      "price_input_per_mtok": 0.132,
-      "price_output_per_mtok": 0.528,
+      "price_input_per_mtok": 0.0825,
+      "price_output_per_mtok": 0.33,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -3117,7 +3117,7 @@
       "openrouter_id": "reflection/beam-1.0-501b-a23b",
       "released_at": "2026-10-16",
       "context_length": 1048576,
-      "price_input_per_mtok": 0.3,
+      "price_input_per_mtok": 0.25,
       "price_output_per_mtok": 1,
       "price_match": "strict",
       "price_source": "openrouter"
@@ -11378,7 +11378,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-11-19T15:40:40.845Z",
+    "fetched_at": "2026-11-19T18:23:10.382Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

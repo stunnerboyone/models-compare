@@ -21,6 +21,7 @@ const ONLY = arg('--only');
 const DUMP = arg('--dump');
 const TEMPLATES = arg('--templates');
 const REPORT = arg('--report');
+const RETRY_MS = Number(process.env.BLOG_STATIC_RETRY_MS || 3000);
 
 const START = /={2,}>\s*START\s+([A-Z0-9_-]+)\s*<={2,}/i;
 const END = /={2,}>\s*END\s+([A-Z0-9_-]+)\s*<={2,}/i;
@@ -204,12 +205,20 @@ function convert(html, templates, warn) {
   return { html: out.join(''), stats };
 }
 
+// Retries on rate limits and server errors: a failed write between the live PATCH and the
+// staged restore below would leave an editor's draft overwritten.
 const api = async (path, opts = {}) => {
-  const r = await fetch('https://api.webflow.com/v2' + path, {
-    ...opts, headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' } });
-  const body = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(r.status + ' ' + path + ' ' + JSON.stringify(body));
-  return body;
+  for (let attempt = 1; ; attempt++) {
+    const r = await fetch('https://api.webflow.com/v2' + path, {
+      ...opts, headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' } });
+    const body = await r.json().catch(() => ({}));
+    if (r.ok) return body;
+    if (attempt < 4 && (r.status === 429 || r.status >= 500)) {
+      await new Promise((res) => setTimeout(res, RETRY_MS * attempt));
+      continue;
+    }
+    throw new Error(r.status + ' ' + path + ' ' + JSON.stringify(body));
+  }
 };
 
 if (DUMP && (APPLY || LIVE)) { console.error('--dump is for dry runs of staged content only'); process.exit(1); }
@@ -228,10 +237,9 @@ console.log('banner templates:', Object.keys(templates).join(', ') || 'NONE');
 mkdirSync('tmp/blog-static', { recursive: true });
 const report = { staged: [], live: [], warnings: [] };
 
-// Staged and live are converted separately, each from its own content, so an editor's
-// unpublished changes are never pushed to the site by this script.
-function run(label, items) {
-  const updates = [];
+// Returns Map(id -> { slug, src, html }) for the given items, logging one line per article.
+function run(label, items, quiet) {
+  const out = new Map();
   for (const item of items) {
     const slug = item.fieldData.slug;
     if (ONLY && slug !== ONLY) continue;
@@ -243,13 +251,15 @@ function run(label, items) {
     catch (e) { html = src; warnings.push('skipped, ' + e.message); }
     const left = (html.match(/(?:START|END)(?:\s|&nbsp;)+(?:TABLE|CODE|BANNER)/g) || []).length;
     if (left) warnings.push(left + ' marker(s) left');
-    console.log(label.padEnd(6), (html === src ? 'same   ' : 'convert'), slug, '| tables', stats.TABLE, 'code', stats.CODE,
-      'banners', stats.BANNER, warnings.length ? '| WARN: ' + warnings.join('; ') : '');
-    warnings.forEach((w) => report.warnings.push(label + ' ' + slug + ': ' + w));
-    if (label === 'staged') writeFileSync('tmp/blog-static/' + slug + '.html', html);
-    if (html !== src) { updates.push({ id: item.id, fieldData: { [FIELD]: html } }); report[label].push(slug); }
+    if (!quiet) {
+      console.log(label.padEnd(6), (html === src ? 'same   ' : 'convert'), slug, '| tables', stats.TABLE, 'code', stats.CODE,
+        'banners', stats.BANNER, warnings.length ? '| WARN: ' + warnings.join('; ') : '');
+      warnings.forEach((w) => report.warnings.push(label + ' ' + slug + ': ' + w));
+      if (label === 'staged') writeFileSync('tmp/blog-static/' + slug + '.html', html);
+    }
+    out.set(item.id, { slug, src, html });
   }
-  return updates;
+  return out;
 }
 
 const PAGE = 100;
@@ -269,25 +279,46 @@ async function patchAll(path, updates) {
   }
   return n;
 }
+const asUpdate = (id, html) => ({ id, fieldData: { [FIELD]: html } });
+const stagedPath = '/collections/' + C_BLOGS + '/items';
+const livePath = '/collections/' + C_BLOGS + '/items/live';
 
-const stagedItems = DUMP
+let staged = run('staged', DUMP
   ? JSON.parse(readFileSync(DUMP, 'utf8')).map((x) => ({ id: x.id, fieldData: { slug: x.slug, [FIELD]: x.article } }))
-  : await listAll('/collections/' + C_BLOGS + '/items');
-const liveItems = LIVE ? await listAll('/collections/' + C_BLOGS + '/items/live') : [];
+  : await listAll(stagedPath));
+const live = run('live', LIVE ? await listAll(livePath) : []);
 
-const stagedUpdates = run('staged', stagedItems);
-const liveUpdates = run('live', liveItems);
-console.log('\nto update: staged', stagedUpdates.length, LIVE ? '| live ' + liveUpdates.length : '');
+const liveIds = [...live].filter(([, v]) => v.html !== v.src).map(([id]) => id);
+const stagedOnly = [...staged].filter(([id, v]) => v.html !== v.src && !liveIds.includes(id)).map(([id]) => id);
+liveIds.forEach((id) => report.live.push(live.get(id).slug));
+[...staged].forEach(([, v]) => { if (v.html !== v.src) report.staged.push(v.slug); });
+console.log('\nto update: staged', report.staged.length, LIVE ? '| live ' + liveIds.length : '');
 
 if (!APPLY) {
   console.log('DRY RUN, nothing written. Converted HTML is in tmp/blog-static/.');
+} else if (!liveIds.length && !stagedOnly.length) {
+  console.log('nothing to update');
 } else {
-  if (stagedUpdates.length) {
-    console.log('patched staged:', await patchAll('/collections/' + C_BLOGS + '/items', stagedUpdates));
+  if (liveIds.length) {
+    // Webflow writes a live PATCH into the staged item as well (checked on the API: only the
+    // fields sent, single and bulk endpoints alike). An editor's unpublished draft of the
+    // article would be replaced by the published text, so the staged text is read again
+    // right before the write, kept in a backup file, and put back afterwards.
+    staged = run('staged', await listAll(stagedPath), true);
+    mkdirSync('tmp/blog-static/backup', { recursive: true });
+    for (const id of liveIds) {
+      const st = staged.get(id);
+      if (st) writeFileSync('tmp/blog-static/backup/' + st.slug + '.staged.html', st.src);
+    }
+    console.log('patched live:', await patchAll(livePath, liveIds.map((id) => asUpdate(id, live.get(id).html))));
+    const restore = liveIds.filter((id) => staged.has(id) && staged.get(id).html !== live.get(id).html);
+    if (restore.length) {
+      console.log('restored staged drafts:', await patchAll(stagedPath, restore.map((id) => asUpdate(id, staged.get(id).html))),
+        '(' + restore.map((id) => staged.get(id).slug).join(', ') + ')');
+    }
   }
-  if (liveUpdates.length) {
-    console.log('patched live:', await patchAll('/collections/' + C_BLOGS + '/items/live', liveUpdates));
+  if (stagedOnly.length) {
+    console.log('patched staged:', await patchAll(stagedPath, stagedOnly.map((id) => asUpdate(id, staged.get(id).html))));
   }
-  if (!stagedUpdates.length && !liveUpdates.length) console.log('nothing to update');
 }
 if (REPORT) writeFileSync(REPORT, JSON.stringify({ applied: APPLY, ...report }, null, 2));

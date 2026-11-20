@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-20T15:21:39.052Z",
+  "generated_at": "2026-11-20T17:48:33.242Z",
   "arena": {
     "published_at": "2026-11-19",
     "source": "https://arena.ai/leaderboard",
@@ -2324,8 +2324,8 @@
       "openrouter_id": "tencent/hy3",
       "released_at": "2026-07-06",
       "context_length": 262144,
-      "price_input_per_mtok": 0.132,
-      "price_output_per_mtok": 0.528,
+      "price_input_per_mtok": 0.0825,
+      "price_output_per_mtok": 0.33,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -5800,7 +5800,7 @@
       "released_at": "2025-03-12",
       "context_length": 131072,
       "price_input_per_mtok": 0.08,
-      "price_output_per_mtok": 0.16,
+      "price_output_per_mtok": 0.45,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11494,7 +11494,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-11-20T15:21:39.052Z",
+    "fetched_at": "2026-11-20T17:48:33.242Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

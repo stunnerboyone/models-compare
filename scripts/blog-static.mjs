@@ -205,19 +205,24 @@ function convert(html, templates, warn) {
   return { html: out.join(''), stats };
 }
 
-// Retries on rate limits and server errors: a failed write between the live PATCH and the
-// staged restore below would leave an editor's draft overwritten.
+// Retries on rate limits, server errors and dropped connections: a failed write between the
+// live PATCH and the staged restore below would leave an editor's draft overwritten.
 const api = async (path, opts = {}) => {
   for (let attempt = 1; ; attempt++) {
-    const r = await fetch('https://api.webflow.com/v2' + path, {
-      ...opts, headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' } });
-    const body = await r.json().catch(() => ({}));
-    if (r.ok) return body;
-    if (attempt < 4 && (r.status === 429 || r.status >= 500)) {
-      await new Promise((res) => setTimeout(res, RETRY_MS * attempt));
-      continue;
+    let failure;
+    try {
+      const r = await fetch('https://api.webflow.com/v2' + path, {
+        ...opts, headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' } });
+      const body = await r.json().catch(() => ({}));
+      if (r.ok) return body;
+      failure = new Error(r.status + ' ' + path + ' ' + JSON.stringify(body));
+      failure.retry = r.status === 429 || r.status >= 500;
+    } catch (e) {
+      failure = new Error('network error on ' + path + ': ' + e.message);
+      failure.retry = true;
     }
-    throw new Error(r.status + ' ' + path + ' ' + JSON.stringify(body));
+    if (!failure.retry || attempt >= 4) throw failure;
+    await new Promise((res) => setTimeout(res, RETRY_MS * attempt));
   }
 };
 

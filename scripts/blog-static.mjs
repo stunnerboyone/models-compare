@@ -34,6 +34,9 @@ const LINKS = {
   'ai-plus': 'https://app.setapp.com/ai-plus',
   vendors: 'https://app.setapp.com/ai-vendor-request',
 };
+// SEO: the "FAQ" label is not a heading, each question under it is an H2 without <strong>.
+const FAQ_TITLE = /^(faqs?|frequently asked questions)\s*:?$/i;
+const unbold = (h) => h.replace(/<\/?(?:strong|b)\b[^>]*>/gi, '');
 const VOID = new Set(['img', 'br', 'hr', 'input', 'source', 'wbr']);
 
 const decode = (s) => s
@@ -170,9 +173,21 @@ function buildCode(lines) {
 function convert(html, templates, warn) {
   const blocks = splitBlocks(html);
   const out = [];
-  const stats = { TABLE: 0, CODE: 0, BANNER: 0 };
+  const stats = { TABLE: 0, CODE: 0, BANNER: 0, FAQ: 0 };
+  let inFaq = false;
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i];
+    const t = b.tag === 'h2' || b.tag === 'h3' || b.tag === 'p' ? text(b.html) : '';
+    if (b.tag === 'h2' && FAQ_TITLE.test(t)) {
+      out.push('<p><strong>' + unbold(inner(b)) + '</strong></p>'); inFaq = true; stats.FAQ++; continue;
+    }
+    if (b.tag === 'p' && FAQ_TITLE.test(t)) inFaq = true;
+    else if (b.tag === 'h2' && !t.endsWith('?')) inFaq = false;
+    else if (inFaq && (b.tag === 'h3' || b.tag === 'h2')) {
+      const fixed = '<h2>' + unbold(inner(b)) + '</h2>';
+      if (fixed !== b.html) stats.FAQ++;
+      out.push(fixed); continue;
+    }
     const start = b.tag === 'p' ? text(b.html).match(START) : null;
     if (!start) { out.push(b.html); continue; }
     const type = start[1].toUpperCase();
@@ -250,7 +265,7 @@ function run(label, items, quiet) {
     if (ONLY && slug !== ONLY) continue;
     const src = item.fieldData[FIELD] || '';
     const warnings = [];
-    let html = src, stats = { TABLE: 0, CODE: 0, BANNER: 0 };
+    let html = src, stats = { TABLE: 0, CODE: 0, BANNER: 0, FAQ: 0 };
     // One article that cannot be parsed must not stop the others: it is left as is and reported.
     try { ({ html, stats } = convert(src, templates, (w) => warnings.push(w))); }
     catch (e) { html = src; warnings.push('skipped, ' + e.message); }
@@ -258,7 +273,7 @@ function run(label, items, quiet) {
     if (left) warnings.push(left + ' marker(s) left');
     if (!quiet) {
       console.log(label.padEnd(6), (html === src ? 'same   ' : 'convert'), slug, '| tables', stats.TABLE, 'code', stats.CODE,
-        'banners', stats.BANNER, warnings.length ? '| WARN: ' + warnings.join('; ') : '');
+        'banners', stats.BANNER, 'faq', stats.FAQ, warnings.length ? '| WARN: ' + warnings.join('; ') : '');
       warnings.forEach((w) => report.warnings.push(label + ' ' + slug + ': ' + w));
       if (label === 'staged') writeFileSync('tmp/blog-static/' + slug + '.html', html);
     }

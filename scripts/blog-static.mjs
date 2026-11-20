@@ -36,6 +36,8 @@ const LINKS = {
 };
 // SEO: the "FAQ" label is not a heading, each question under it is an H2 without <strong>.
 const FAQ_TITLE = /^(faqs?|frequently asked questions)\s*:?$/i;
+// The label is an embed so that CSS can find it and size the questions that follow.
+const FAQ_LABEL = (h) => '<div data-rt-embed-type="true"><p class="faq-label">' + h + '</p></div>';
 const unbold = (h) => h.replace(/<\/?(?:strong|b)\b[^>]*>/gi, '');
 const VOID = new Set(['img', 'br', 'hr', 'input', 'source', 'wbr']);
 
@@ -178,10 +180,10 @@ function convert(html, templates, warn) {
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i];
     const t = b.tag === 'h2' || b.tag === 'h3' || b.tag === 'p' ? text(b.html) : '';
-    if (b.tag === 'h2' && FAQ_TITLE.test(t)) {
-      out.push('<p><strong>' + unbold(inner(b)) + '</strong></p>'); inFaq = true; stats.FAQ++; continue;
+    if ((b.tag === 'h2' || b.tag === 'p') && FAQ_TITLE.test(t)) {
+      out.push(FAQ_LABEL(unbold(inner(b)))); inFaq = true; stats.FAQ++; continue;
     }
-    if (b.tag === 'p' && FAQ_TITLE.test(t)) inFaq = true;
+    if (b.tag === 'div' && /class=["']faq-label["']/.test(b.html)) inFaq = true;
     else if (b.tag === 'h2' && !t.endsWith('?')) inFaq = false;
     else if (inFaq && (b.tag === 'h3' || b.tag === 'h2')) {
       const fixed = '<h2>' + unbold(inner(b)) + '</h2>';

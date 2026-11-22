@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-21T16:47:58.710Z",
+  "generated_at": "2026-11-22T14:30:57.731Z",
   "arena": {
     "published_at": "2026-11-19",
     "source": "https://arena.ai/leaderboard",
@@ -2324,8 +2324,8 @@
       "openrouter_id": "tencent/hy3",
       "released_at": "2026-07-06",
       "context_length": 262144,
-      "price_input_per_mtok": 0.0825,
-      "price_output_per_mtok": 0.33,
+      "price_input_per_mtok": 0.14,
+      "price_output_per_mtok": 0.58,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -3175,8 +3175,8 @@
       "openrouter_id": "qwen/qwen3.8-27b",
       "released_at": "2026-08-14",
       "context_length": 1024000,
-      "price_input_per_mtok": 0.06,
-      "price_output_per_mtok": 1.96,
+      "price_input_per_mtok": 0.035,
+      "price_output_per_mtok": 1.5,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -7583,8 +7583,8 @@
       "openrouter_id": "openai/gpt-oss-20b",
       "released_at": "2025-08-05",
       "context_length": 131072,
-      "price_input_per_mtok": 0.017,
-      "price_output_per_mtok": 0.085,
+      "price_input_per_mtok": 0.075,
+      "price_output_per_mtok": 0.3,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -8034,8 +8034,8 @@
       "openrouter_id": "google/gemma-3-4b-it",
       "released_at": "2025-03-13",
       "context_length": 131072,
-      "price_input_per_mtok": 0.05,
-      "price_output_per_mtok": 0.1,
+      "price_input_per_mtok": 0.04,
+      "price_output_per_mtok": 0.05,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11494,7 +11494,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-11-21T16:47:58.710Z",
+    "fetched_at": "2026-11-22T14:30:57.731Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

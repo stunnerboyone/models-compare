@@ -38,6 +38,12 @@ const LINKS = {
 const FAQ_TITLE = /^(faqs?|frequently asked questions)\s*:?$/i;
 // The label is an embed so that CSS can find it and size the questions that follow.
 const FAQ_LABEL = (h) => '<div data-rt-embed-type="true"><p class="faq-label">' + h + '</p></div>';
+// FAQPage JSON-LD built from the questions and answers of the article, kept as the last block.
+const FAQ_SCHEMA = /application\/ld\+json[\s\S]*FAQPage/;
+const faqSchema = (faq) => '<div data-rt-embed-type="true"><script type="application/ld+json">' + JSON.stringify({
+  '@context': 'https://schema.org', '@type': 'FAQPage',
+  mainEntity: faq.map((x) => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: x.a.join(' ') } })),
+}).replace(/</g, '\\u003c') + '</script></div>';
 const unbold = (h) => h.replace(/<\/?(?:strong|b)\b[^>]*>/gi, '');
 const VOID = new Set(['img', 'br', 'hr', 'input', 'source', 'wbr']);
 
@@ -177,8 +183,10 @@ function convert(html, templates, warn) {
   const out = [];
   const stats = { TABLE: 0, CODE: 0, BANNER: 0, FAQ: 0 };
   let inFaq = false;
+  const faq = [];
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i];
+    if (b.tag === 'div' && FAQ_SCHEMA.test(b.html)) continue;
     const t = b.tag === 'h2' || b.tag === 'h3' || b.tag === 'p' ? text(b.html) : '';
     if ((b.tag === 'h2' || b.tag === 'p') && FAQ_TITLE.test(t)) {
       out.push(FAQ_LABEL(unbold(inner(b)))); inFaq = true; stats.FAQ++; continue;
@@ -188,7 +196,12 @@ function convert(html, templates, warn) {
     else if (inFaq && (b.tag === 'h3' || b.tag === 'h2')) {
       const fixed = '<h2>' + unbold(inner(b)) + '</h2>';
       if (fixed !== b.html) stats.FAQ++;
+      faq.push({ q: text(fixed), a: [] });
       out.push(fixed); continue;
+    }
+    if (inFaq && faq.length && (b.tag === 'p' || b.tag === 'ul' || b.tag === 'ol') && !START.test(text(b.html))) {
+      const a = text(b.html.replace(/<\/(?:li|p)>|<br\s*\/?>/gi, ' ')).replace(/\s+/g, ' ');
+      if (a) faq[faq.length - 1].a.push(a);
     }
     const start = b.tag === 'p' ? text(b.html).match(START) : null;
     if (!start) { out.push(b.html); continue; }
@@ -219,6 +232,8 @@ function convert(html, templates, warn) {
     stats[type]++;
     i = j;
   }
+  const answered = faq.filter((x) => x.a.length);
+  if (answered.length) out.push(faqSchema(answered));
   return { html: out.join(''), stats };
 }
 

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-23T17:59:20.310Z",
+  "generated_at": "2026-11-23T21:25:03.757Z",
   "arena": {
     "published_at": "2026-11-22",
     "source": "https://arena.ai/leaderboard",
@@ -1646,13 +1646,13 @@
       "arena_votes": 76445,
       "canonical_id": "mimo-v2.5-pro",
       "reasoning_mode": null,
-      "openrouter_id": "xiaomi/mimo-v2.5-pro",
-      "released_at": "2026-04-22",
-      "context_length": 262144,
-      "price_input_per_mtok": 0.48,
-      "price_output_per_mtok": 1.8,
-      "price_match": "strict",
-      "price_source": "openrouter"
+      "openrouter_id": null,
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "Grok 4.5",
@@ -2754,7 +2754,7 @@
       "reasoning_mode": null,
       "openrouter_id": "thinkingmachines/inkling",
       "released_at": "2026-07-17",
-      "context_length": 524288,
+      "context_length": 1048576,
       "price_input_per_mtok": 1,
       "price_output_per_mtok": 4.05,
       "price_match": "strict",
@@ -3007,8 +3007,8 @@
       "openrouter_id": "google/gemma-4-26b-a4b-it",
       "released_at": "2026-04-03",
       "context_length": 262144,
-      "price_input_per_mtok": 0.09,
-      "price_output_per_mtok": 0.3,
+      "price_input_per_mtok": 0.0765,
+      "price_output_per_mtok": 0.255,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -11481,19 +11481,19 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-11-23T17:59:20.310Z",
+    "fetched_at": "2026-11-23T21:25:03.757Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
     },
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
-    "matched": 180,
+    "matched": 179,
     "official": 123,
-    "matched_strict": 140,
+    "matched_strict": 139,
     "matched_loose": 40,
     "blocked_ambiguous": 13,
-    "unmatched": 247,
+    "unmatched": 248,
     "coverage_top50": 44,
     "unmatched_models": [
       {
@@ -11550,6 +11550,13 @@
         "canonical": "ernie-5.1",
         "loose": "ernie-5.1",
         "org": "baidu",
+        "reason": "not on openrouter"
+      },
+      {
+        "arena": "MiMo-V2.5-Pro",
+        "canonical": "mimo-v2.5-pro",
+        "loose": "mimo-v2.5-pro",
+        "org": "xiaomi",
         "reason": "not on openrouter"
       },
       {

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-24T17:34:52.548Z",
+  "generated_at": "2026-11-24T20:09:31.892Z",
   "arena": {
     "published_at": "2026-11-22",
     "source": "https://arena.ai/leaderboard",
@@ -778,7 +778,7 @@
       "price_output_per_mtok": 10,
       "price_match": "loose",
       "price_source": "official",
-      "price_provider": "moonshotai",
+      "price_provider": "alibaba",
       "modelsdev_id": "kimi-k3.1-pro",
       "knowledge_cutoff": null
     },
@@ -1925,15 +1925,12 @@
       "canonical_id": "qwen3.6-max-preview",
       "reasoning_mode": null,
       "openrouter_id": null,
-      "price_input_per_mtok": 1.3,
-      "price_output_per_mtok": 7.8,
-      "price_source": "official",
-      "price_provider": "alibaba",
-      "price_match": "strict",
-      "modelsdev_id": "qwen3.6-max-preview",
-      "released_at": "2026-04-20",
-      "context_length": 262144,
-      "knowledge_cutoff": "2025-04"
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "Grok 4.1",
@@ -3007,8 +3004,8 @@
       "openrouter_id": "google/gemma-4-26b-a4b-it",
       "released_at": "2026-04-03",
       "context_length": 262144,
-      "price_input_per_mtok": 0.09,
-      "price_output_per_mtok": 0.3,
+      "price_input_per_mtok": 0.0765,
+      "price_output_per_mtok": 0.255,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -3199,15 +3196,12 @@
       "canonical_id": "qwen3-max-preview",
       "reasoning_mode": null,
       "openrouter_id": null,
-      "price_input_per_mtok": 1.2,
-      "price_output_per_mtok": 6,
-      "price_source": "official",
-      "price_provider": "alibaba",
-      "price_match": "loose",
-      "modelsdev_id": "qwen3-max",
-      "released_at": "2025-09-23",
-      "context_length": 262144,
-      "knowledge_cutoff": "2025-04"
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "MiniMax-M3",
@@ -3256,13 +3250,13 @@
       "arena_votes": 46654,
       "canonical_id": "mimo-v2.5",
       "reasoning_mode": null,
-      "openrouter_id": "xiaomi/mimo-v2.5",
-      "released_at": "2026-04-22",
-      "context_length": 1000000,
-      "price_input_per_mtok": 0.4,
-      "price_output_per_mtok": 2,
-      "price_match": "strict",
-      "price_source": "openrouter"
+      "openrouter_id": null,
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "Beam 1.0 501B A23B",
@@ -3737,15 +3731,12 @@
       "canonical_id": "qwen3-max",
       "reasoning_mode": null,
       "openrouter_id": null,
-      "price_input_per_mtok": 1.2,
-      "price_output_per_mtok": 6,
-      "price_source": "official",
-      "price_provider": "alibaba",
-      "price_match": "strict",
-      "modelsdev_id": "qwen3-max",
-      "released_at": "2025-09-23",
-      "context_length": 262144,
-      "knowledge_cutoff": "2025-04"
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "DeepSeek-V3.2 (Thinking)",
@@ -4810,15 +4801,12 @@
       "canonical_id": "qwen3-next-80b-a3b-instruct",
       "reasoning_mode": null,
       "openrouter_id": "qwen/qwen3-next-80b-a3b-instruct",
-      "released_at": "2025-09",
+      "released_at": "2025-09-11",
       "context_length": 262144,
-      "price_input_per_mtok": 0.5,
-      "price_output_per_mtok": 2,
+      "price_input_per_mtok": 0.1,
+      "price_output_per_mtok": 1.1,
       "price_match": "strict",
-      "price_source": "official",
-      "price_provider": "alibaba",
-      "modelsdev_id": "qwen3-next-80b-a3b-instruct",
-      "knowledge_cutoff": "2025-04"
+      "price_source": "openrouter"
     },
     {
       "arena_model_name": "DeepSeek-R1",
@@ -4920,15 +4908,12 @@
       "canonical_id": "qwen3-vl-235b-a22b",
       "reasoning_mode": "thinking",
       "openrouter_id": null,
-      "price_input_per_mtok": 0.7,
-      "price_output_per_mtok": 2.8,
-      "price_source": "official",
-      "price_provider": "alibaba",
-      "price_match": "strict",
-      "modelsdev_id": "qwen3-vl-235b-a22b",
-      "released_at": "2025-04",
-      "context_length": 131072,
-      "knowledge_cutoff": "2025-04"
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "Hunyuan Vision 1.5 Thinking",
@@ -5086,7 +5071,7 @@
       "reasoning_mode": null,
       "openrouter_id": "minimax/minimax-m2.5",
       "released_at": "2026-02-12",
-      "context_length": 198000,
+      "context_length": 65536,
       "price_input_per_mtok": 0.3,
       "price_output_per_mtok": 1.2,
       "price_match": "strict",
@@ -5273,15 +5258,12 @@
       "canonical_id": "qwen3-coder-480b-a35b-instruct",
       "reasoning_mode": null,
       "openrouter_id": null,
-      "price_input_per_mtok": 1.5,
-      "price_output_per_mtok": 7.5,
-      "price_source": "official",
-      "price_provider": "alibaba",
-      "price_match": "strict",
-      "modelsdev_id": "qwen3-coder-480b-a35b-instruct",
-      "released_at": "2025-04",
-      "context_length": 262144,
-      "knowledge_cutoff": "2025-04"
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "Hunyuan T1 (20250711)",
@@ -5597,15 +5579,12 @@
       "canonical_id": "qwen3.235b-a22b",
       "reasoning_mode": null,
       "openrouter_id": "qwen/qwen3-235b-a22b-2507",
-      "released_at": "2025-04",
+      "released_at": "2025-07-21",
       "context_length": 262144,
-      "price_input_per_mtok": 0.7,
-      "price_output_per_mtok": 2.8,
-      "price_match": "strict",
-      "price_source": "official",
-      "price_provider": "alibaba",
-      "modelsdev_id": "qwen3-235b-a22b",
-      "knowledge_cutoff": "2025-04"
+      "price_input_per_mtok": 0.14,
+      "price_output_per_mtok": 0.8,
+      "price_match": "loose",
+      "price_source": "openrouter"
     },
     {
       "arena_model_name": "Claude 3.5 Sonnet (20241022)",
@@ -5733,15 +5712,12 @@
       "canonical_id": "qwen3-next-80b-a3b",
       "reasoning_mode": "thinking",
       "openrouter_id": null,
-      "price_input_per_mtok": 0.5,
-      "price_output_per_mtok": 6,
-      "price_source": "official",
-      "price_provider": "alibaba",
-      "price_match": "strict",
-      "modelsdev_id": "qwen3-next-80b-a3b-thinking",
-      "released_at": "2025-09",
-      "context_length": 131072,
-      "knowledge_cutoff": "2025-04"
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "Trinity Large Thinking",
@@ -6418,15 +6394,12 @@
       "canonical_id": "qwen3.32b",
       "reasoning_mode": null,
       "openrouter_id": "qwen/qwen3-32b",
-      "released_at": "2025-04",
+      "released_at": "2025-04-28",
       "context_length": 131072,
-      "price_input_per_mtok": 0.7,
-      "price_output_per_mtok": 2.8,
+      "price_input_per_mtok": 0.08,
+      "price_output_per_mtok": 0.28,
       "price_match": "strict",
-      "price_source": "official",
-      "price_provider": "alibaba",
-      "modelsdev_id": "qwen3-32b",
-      "knowledge_cutoff": "2025-04"
+      "price_source": "openrouter"
     },
     {
       "arena_model_name": "amazon-nova-experimental-chat (10-09)",
@@ -11481,19 +11454,19 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-11-24T17:34:52.548Z",
+    "fetched_at": "2026-11-24T20:09:31.892Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
     },
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
-    "matched": 177,
-    "official": 123,
-    "matched_strict": 139,
-    "matched_loose": 38,
+    "matched": 170,
+    "official": 114,
+    "matched_strict": 133,
+    "matched_loose": 37,
     "blocked_ambiguous": 11,
-    "unmatched": 250,
+    "unmatched": 257,
     "coverage_top50": 44,
     "unmatched_models": [
       {
@@ -11581,6 +11554,13 @@
         "reason": "not on openrouter"
       },
       {
+        "arena": "Qwen3.6-Max-Preview",
+        "canonical": "qwen3.6-max-preview",
+        "loose": "qwen3.6",
+        "org": "alibaba",
+        "reason": "not on openrouter"
+      },
+      {
         "arena": "Grok 4.1",
         "canonical": "grok-4.1",
         "loose": "grok-4.1",
@@ -11665,6 +11645,20 @@
         "reason": "not on openrouter"
       },
       {
+        "arena": "Qwen3-Max-Preview",
+        "canonical": "qwen3-max-preview",
+        "loose": "qwen3",
+        "org": "alibaba",
+        "reason": "not on openrouter"
+      },
+      {
+        "arena": "MiMo-V2.5",
+        "canonical": "mimo-v2.5",
+        "loose": "mimo-v2.5",
+        "org": "xiaomi",
+        "reason": "not on openrouter"
+      },
+      {
         "arena": "Grok 4.1 Fast (Reasoning)",
         "canonical": "grok-4.1-fast",
         "loose": "grok-4.1-fast",
@@ -11718,6 +11712,13 @@
         "canonical": "muse-glimmer",
         "loose": "muse-glimmer",
         "org": "meta",
+        "reason": "not on openrouter"
+      },
+      {
+        "arena": "Qwen3-Max (2025-09-23)",
+        "canonical": "qwen3-max",
+        "loose": "qwen3",
+        "org": "alibaba",
         "reason": "not on openrouter"
       },
       {
@@ -11875,6 +11876,13 @@
         "reason": "not on openrouter"
       },
       {
+        "arena": "Qwen3-VL-235B-A22B-Thinking",
+        "canonical": "qwen3-vl-235b-a22b",
+        "loose": "qwen3-vl-235b-a22b",
+        "org": "alibaba",
+        "reason": "not on openrouter"
+      },
+      {
         "arena": "Hunyuan Vision 1.5 Thinking",
         "canonical": "hunyuan-vision-1.5",
         "loose": "hunyuan-vision-1.5",
@@ -11921,6 +11929,13 @@
         "canonical": "solar-pro-4",
         "loose": "solar-pro-4",
         "org": "upstage",
+        "reason": "not on openrouter"
+      },
+      {
+        "arena": "Qwen3-Coder-480B-A35B-Instruct",
+        "canonical": "qwen3-coder-480b-a35b-instruct",
+        "loose": "qwen3-coder-480b-a35b-instruct",
+        "org": "alibaba",
         "reason": "not on openrouter"
       },
       {
@@ -11991,6 +12006,13 @@
         "canonical": "claude-3.7-sonnet",
         "loose": "claude-3.7-sonnet",
         "org": "anthropic",
+        "reason": "not on openrouter"
+      },
+      {
+        "arena": "Qwen3-Next-80B-A3B-Thinking",
+        "canonical": "qwen3-next-80b-a3b",
+        "loose": "qwen3-next-80b-a3b",
+        "org": "alibaba",
         "reason": "not on openrouter"
       },
       {

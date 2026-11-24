@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-23T21:25:03.757Z",
+  "generated_at": "2026-11-24T17:34:52.548Z",
   "arena": {
     "published_at": "2026-11-22",
     "source": "https://arena.ai/leaderboard",
@@ -177,7 +177,7 @@
       "price_source": "official",
       "price_provider": "anthropic",
       "modelsdev_id": "claude-fable-5",
-      "knowledge_cutoff": null
+      "knowledge_cutoff": "2026-01-31"
     },
     {
       "arena_model_name": "Claude Opus 4.6 (High)",
@@ -2179,8 +2179,8 @@
       "openrouter_id": "tencent/hy3",
       "released_at": "2026-07-06",
       "context_length": 262144,
-      "price_input_per_mtok": 0.14,
-      "price_output_per_mtok": 0.58,
+      "price_input_per_mtok": 0.0825,
+      "price_output_per_mtok": 0.33,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -3007,8 +3007,8 @@
       "openrouter_id": "google/gemma-4-26b-a4b-it",
       "released_at": "2026-04-03",
       "context_length": 262144,
-      "price_input_per_mtok": 0.0765,
-      "price_output_per_mtok": 0.255,
+      "price_input_per_mtok": 0.09,
+      "price_output_per_mtok": 0.3,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -3146,8 +3146,8 @@
       "openrouter_id": "qwen/qwen3.8-27b",
       "released_at": "2026-08-14",
       "context_length": 1024000,
-      "price_input_per_mtok": 0.035,
-      "price_output_per_mtok": 1.5,
+      "price_input_per_mtok": 0.06,
+      "price_output_per_mtok": 1.96,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -3714,7 +3714,7 @@
       "price_provider": "mistral",
       "price_match": "strict",
       "modelsdev_id": "mistral-large-4",
-      "released_at": "2026-10-06",
+      "released_at": "2026-10-05",
       "context_length": 1048576,
       "knowledge_cutoff": null
     },
@@ -4543,13 +4543,13 @@
       "arena_votes": 94641,
       "canonical_id": "mistral-medium-3.1.2508",
       "reasoning_mode": null,
-      "openrouter_id": "mistralai/mistral-medium-3.1",
-      "released_at": "2025-08-13",
-      "context_length": 131072,
-      "price_input_per_mtok": 0.44,
-      "price_output_per_mtok": 2.2,
-      "price_match": "loose",
-      "price_source": "openrouter"
+      "openrouter_id": null,
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "Grok 4 Fast (Reasoning)",
@@ -5327,13 +5327,13 @@
       "arena_votes": 32746,
       "canonical_id": "mistral-medium-3.2505",
       "reasoning_mode": null,
-      "openrouter_id": "mistralai/mistral-medium-3",
-      "released_at": "2025-05-07",
-      "context_length": 131072,
-      "price_input_per_mtok": 0.44,
-      "price_output_per_mtok": 2.2,
-      "price_match": "loose",
-      "price_source": "openrouter"
+      "openrouter_id": null,
+      "released_at": null,
+      "context_length": null,
+      "price_input_per_mtok": null,
+      "price_output_per_mtok": null,
+      "price_match": null,
+      "price_source": null
     },
     {
       "arena_model_name": "MiMo-V2-Flash (Thinking)",
@@ -9576,8 +9576,8 @@
       "openrouter_id": "meta-llama/llama-3.1-8b-instruct",
       "released_at": "2024-07-23",
       "context_length": 131072,
-      "price_input_per_mtok": 0.02,
-      "price_output_per_mtok": 0.04,
+      "price_input_per_mtok": 0.05,
+      "price_output_per_mtok": 0.08,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11481,19 +11481,19 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-11-23T21:25:03.757Z",
+    "fetched_at": "2026-11-24T17:34:52.548Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
     },
     "unit": "USD per 1M tokens",
     "note": "Each model carries price_source: 'official' is the vendor's own list price from models.dev and can be published as such; 'openrouter' includes OpenRouter's service fee and must be labelled accordingly.",
-    "matched": 179,
+    "matched": 177,
     "official": 123,
     "matched_strict": 139,
-    "matched_loose": 40,
-    "blocked_ambiguous": 13,
-    "unmatched": 248,
+    "matched_loose": 38,
+    "blocked_ambiguous": 11,
+    "unmatched": 250,
     "coverage_top50": 44,
     "unmatched_models": [
       {
@@ -11732,7 +11732,7 @@
         "canonical": "kimi-k2-preview-0905",
         "loose": "kimi-k2",
         "org": "moonshot",
-        "reason": "ambiguous"
+        "reason": "not on openrouter"
       },
       {
         "arena": "Grok 4 Fast (Non-Reasoning)",
@@ -11746,7 +11746,7 @@
         "canonical": "kimi-k2-preview-0711",
         "loose": "kimi-k2",
         "org": "moonshot",
-        "reason": "ambiguous"
+        "reason": "not on openrouter"
       },
       {
         "arena": "ERNIE-5.0-Preview (1022)",
@@ -11817,6 +11817,13 @@
         "loose": "hy3",
         "org": "tencent",
         "reason": "ambiguous"
+      },
+      {
+        "arena": "Mistral Medium 3.1 (2508)",
+        "canonical": "mistral-medium-3.1.2508",
+        "loose": "mistral-medium-3.1",
+        "org": "mistral",
+        "reason": "not on openrouter"
       },
       {
         "arena": "Grok 4 Fast (Reasoning)",
@@ -11921,6 +11928,13 @@
         "canonical": "hunyuan-t1",
         "loose": "hunyuan-t1",
         "org": "tencent",
+        "reason": "not on openrouter"
+      },
+      {
+        "arena": "Mistral Medium 3 (2505)",
+        "canonical": "mistral-medium-3.2505",
+        "loose": "mistral-medium-3",
+        "org": "mistral",
         "reason": "not on openrouter"
       },
       {

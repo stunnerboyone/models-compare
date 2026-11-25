@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-24T20:09:31.892Z",
+  "generated_at": "2026-11-25T17:06:36.199Z",
   "arena": {
     "published_at": "2026-11-22",
     "source": "https://arena.ai/leaderboard",
@@ -3004,8 +3004,8 @@
       "openrouter_id": "google/gemma-4-26b-a4b-it",
       "released_at": "2026-04-03",
       "context_length": 262144,
-      "price_input_per_mtok": 0.0765,
-      "price_output_per_mtok": 0.255,
+      "price_input_per_mtok": 0.09,
+      "price_output_per_mtok": 0.3,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -3143,8 +3143,8 @@
       "openrouter_id": "qwen/qwen3.8-27b",
       "released_at": "2026-08-14",
       "context_length": 1024000,
-      "price_input_per_mtok": 0.06,
-      "price_output_per_mtok": 1.96,
+      "price_input_per_mtok": 0.035,
+      "price_output_per_mtok": 1.5,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -5817,7 +5817,7 @@
       "reasoning_mode": null,
       "openrouter_id": "z-ai/glm-4.7-flash",
       "released_at": "2026-01-19",
-      "context_length": 200000,
+      "context_length": 131072,
       "price_input_per_mtok": 0.0605,
       "price_output_per_mtok": 0.4,
       "price_match": "strict",
@@ -11454,7 +11454,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-11-24T20:09:31.892Z",
+    "fetched_at": "2026-11-25T17:06:36.199Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

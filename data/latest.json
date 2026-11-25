@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-25T17:06:36.199Z",
+  "generated_at": "2026-11-25T19:15:45.340Z",
   "arena": {
     "published_at": "2026-11-22",
     "source": "https://arena.ai/leaderboard",
@@ -2295,7 +2295,7 @@
       "price_source": "official",
       "price_provider": "anthropic",
       "modelsdev_id": "claude-sonnet-4-5",
-      "knowledge_cutoff": "2025-07-31"
+      "knowledge_cutoff": "2025-01-31"
     },
     {
       "arena_model_name": "DeepSeek-V4-Pro Preview (High)",
@@ -3004,8 +3004,8 @@
       "openrouter_id": "google/gemma-4-26b-a4b-it",
       "released_at": "2026-04-03",
       "context_length": 262144,
-      "price_input_per_mtok": 0.09,
-      "price_output_per_mtok": 0.3,
+      "price_input_per_mtok": 0.0765,
+      "price_output_per_mtok": 0.255,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -11454,7 +11454,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-11-25T17:06:36.199Z",
+    "fetched_at": "2026-11-25T19:15:45.340Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"

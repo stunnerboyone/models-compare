@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-25T19:15:45.340Z",
+  "generated_at": "2026-11-26T16:47:37.742Z",
   "arena": {
     "published_at": "2026-11-22",
     "source": "https://arena.ai/leaderboard",
@@ -3004,8 +3004,8 @@
       "openrouter_id": "google/gemma-4-26b-a4b-it",
       "released_at": "2026-04-03",
       "context_length": 262144,
-      "price_input_per_mtok": 0.0765,
-      "price_output_per_mtok": 0.255,
+      "price_input_per_mtok": 0.09,
+      "price_output_per_mtok": 0.3,
       "price_match": "loose",
       "price_source": "openrouter"
     },
@@ -3143,8 +3143,8 @@
       "openrouter_id": "qwen/qwen3.8-27b",
       "released_at": "2026-08-14",
       "context_length": 1024000,
-      "price_input_per_mtok": 0.035,
-      "price_output_per_mtok": 1.5,
+      "price_input_per_mtok": 0.06,
+      "price_output_per_mtok": 1.96,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -3279,7 +3279,7 @@
       "openrouter_id": "reflection/beam-1.0-501b-a23b",
       "released_at": "2026-10-16",
       "context_length": 1048576,
-      "price_input_per_mtok": 0.25,
+      "price_input_per_mtok": 0.3,
       "price_output_per_mtok": 1,
       "price_match": "strict",
       "price_source": "openrouter"
@@ -5793,7 +5793,7 @@
       "released_at": "2025-03-12",
       "context_length": 131072,
       "price_input_per_mtok": 0.08,
-      "price_output_per_mtok": 0.16,
+      "price_output_per_mtok": 0.45,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11454,7 +11454,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-11-25T19:15:45.340Z",
+    "fetched_at": "2026-11-26T16:47:37.742Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
@@ -11465,7 +11465,7 @@
     "official": 114,
     "matched_strict": 133,
     "matched_loose": 37,
-    "blocked_ambiguous": 11,
+    "blocked_ambiguous": 13,
     "unmatched": 257,
     "coverage_top50": 44,
     "unmatched_models": [
@@ -11733,7 +11733,7 @@
         "canonical": "kimi-k2-preview-0905",
         "loose": "kimi-k2",
         "org": "moonshot",
-        "reason": "not on openrouter"
+        "reason": "ambiguous"
       },
       {
         "arena": "Grok 4 Fast (Non-Reasoning)",
@@ -11747,7 +11747,7 @@
         "canonical": "kimi-k2-preview-0711",
         "loose": "kimi-k2",
         "org": "moonshot",
-        "reason": "not on openrouter"
+        "reason": "ambiguous"
       },
       {
         "arena": "ERNIE-5.0-Preview (1022)",

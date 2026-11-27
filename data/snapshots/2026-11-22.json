@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-26T16:47:37.742Z",
+  "generated_at": "2026-11-27T16:33:09.708Z",
   "arena": {
     "published_at": "2026-11-22",
     "source": "https://arena.ai/leaderboard",
@@ -2454,8 +2454,8 @@
       "openrouter_id": "moonshotai/kimi-k2.5",
       "released_at": "2026-01-27",
       "context_length": 262144,
-      "price_input_per_mtok": 0.5,
-      "price_output_per_mtok": 2.5,
+      "price_input_per_mtok": 0.6,
+      "price_output_per_mtok": 3,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -3674,7 +3674,7 @@
       "reasoning_mode": null,
       "openrouter_id": "z-ai/glm-4.6",
       "released_at": "2025-09-30",
-      "context_length": 204800,
+      "context_length": 202752,
       "price_input_per_mtok": 0.6,
       "price_output_per_mtok": 2.2,
       "price_match": "strict",
@@ -5766,8 +5766,8 @@
       "openrouter_id": "thinkingmachines/inkling-2-mini",
       "released_at": "2026-11-21",
       "context_length": 1048576,
-      "price_input_per_mtok": 0.075,
-      "price_output_per_mtok": 0.3,
+      "price_input_per_mtok": 0.06,
+      "price_output_per_mtok": 0.24,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -5793,7 +5793,7 @@
       "released_at": "2025-03-12",
       "context_length": 131072,
       "price_input_per_mtok": 0.08,
-      "price_output_per_mtok": 0.45,
+      "price_output_per_mtok": 0.16,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -7451,8 +7451,8 @@
       "openrouter_id": "meta-llama/llama-3.3-70b-instruct",
       "released_at": "2024-12-06",
       "context_length": 131072,
-      "price_input_per_mtok": 0.71,
-      "price_output_per_mtok": 0.71,
+      "price_input_per_mtok": 0.59,
+      "price_output_per_mtok": 0.79,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -8006,8 +8006,8 @@
       "openrouter_id": "google/gemma-3-4b-it",
       "released_at": "2025-03-13",
       "context_length": 131072,
-      "price_input_per_mtok": 0.04,
-      "price_output_per_mtok": 0.05,
+      "price_input_per_mtok": 0.05,
+      "price_output_per_mtok": 0.1,
       "price_match": "strict",
       "price_source": "openrouter"
     },
@@ -11454,7 +11454,7 @@
     }
   ],
   "pricing": {
-    "fetched_at": "2026-11-26T16:47:37.742Z",
+    "fetched_at": "2026-11-27T16:33:09.708Z",
     "sources": {
       "official": "https://models.dev/api.json",
       "fallback": "https://openrouter.ai/api/v1/models"
